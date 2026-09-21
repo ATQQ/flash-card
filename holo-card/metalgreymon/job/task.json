@@ -1,0 +1,77 @@
+{
+  "version": 3,
+  "prompt_digest": "1c50e724eae148e57c605e625aac30a1870f620b0ae651f59551987ab58c0a89",
+  "layer_mode": "direct_rgba",
+  "execution": "codex_builtin_image_gen",
+  "name": "MetalGreymon Holo Card",
+  "status": "completed",
+  "created_at": 1789891884906,
+  "source": {
+    "original": "original.png",
+    "sha256": "cdca4c0f258e884b0beb9c8f1e31fa772ed0c2e9f46bf21b521716dc722f1983",
+    "normalized_sha256": "2c7cc13c305e10cbab3febc74bed11025c12435a0187495d524e9ca13125c090",
+    "width": 1066,
+    "height": 1600
+  },
+  "layers": {
+    "character": {
+      "status": "imported",
+      "error": null,
+      "raw": "raw/character.png",
+      "sha256": "6937673765c0ec1d58dbc4079ceba703a9b85854679924db40f6df7b84256d55",
+      "format": "rgba",
+      "imported_at": 1789892251097,
+      "tool_reference": "relaxed gray flood-fill to remove checkerboard speckles",
+      "alpha_method": "independent_selection",
+      "alpha_inputs": {
+        "color": "alpha-inputs/character/1789892250319419000-color.png",
+        "color_sha256": "c977d225325f3e0e328a3ca4a9b9af77334e283a2ddf280ffb98d94845e965d4",
+        "mask": "alpha-inputs/character/1789892250319419000-mask.png",
+        "mask_sha256": "78312117d6e6a30912759b7809474778c6c65dbfd714b5da513ce01ea330bcd5"
+      },
+      "visual_review": "required: alignment, edge contamination, interior holes, text residue"
+    },
+    "background": {
+      "status": "imported",
+      "error": null,
+      "raw": "raw/background.jpg",
+      "sha256": "b897b6b571748303b63e1856b759751776354b316394cf43c0b891eb86647aa1",
+      "format": "rgba",
+      "imported_at": 1789892012473,
+      "tool_reference": "image_edit: full opaque ruined-city background, no frame/text"
+    },
+    "ui": {
+      "status": "imported",
+      "error": null,
+      "raw": "raw/ui.png",
+      "sha256": "6cfc9c63a58cec72a731f60d47f8e0fc3b1f3a1387f29c1183dc2ba95847c4ec",
+      "format": "rgba",
+      "imported_at": 1789892199579,
+      "tool_reference": "center-seeded flood-fill gray checkerboard removal",
+      "alpha_method": "independent_selection",
+      "alpha_inputs": {
+        "color": "alpha-inputs/ui/1789892198871040000-color.png",
+        "color_sha256": "648b8e35786d28e83cbae95de78a45bdfe048adc3c63b0734f290feec25cfe8e",
+        "mask": "alpha-inputs/ui/1789892198871040000-mask.png",
+        "mask_sha256": "2712187adb61902fcdbb7a0c625e83a6b85e5a49fc1916a8b83ab54d88ab36f3"
+      },
+      "visual_review": "required: alignment, edge contamination, interior holes, text residue"
+    },
+    "structure": {
+      "status": "imported",
+      "error": null,
+      "raw": "raw/structure.jpg",
+      "sha256": "a79a24c4d8e1fdf57e785bec740e488de96d4ed002fdf5ab8f7d16f7970f5087",
+      "format": "mask",
+      "imported_at": 1789892104638,
+      "tool_reference": "image_edit: white contour lines on black from character"
+    }
+  },
+  "repairs": {
+    "background_inpainting": true,
+    "subject_text_cleanup": true
+  },
+  "completed_at": 1789892275744,
+  "warnings": [],
+  "quality_review": "not_automatically_verified"
+}

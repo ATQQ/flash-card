@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>闪卡实验场 · Flash Card Demos</title>
+<meta name="description" content="一组闪卡交互 Demo 的集合：翻转、记忆、间隔重复。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=ZCOOL+QingKe+HuangYou&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0E0B21;
+    --surface: #171233;
+    --surface-2: #1E1840;
+    --line: rgba(255, 255, 255, 0.09);
+    --text: #EFEBFF;
+    --muted: #9B93C4;
+    --cyan: #43E8D8;
+    --violet: #8B5CFF;
+    --pink: #FF5CA8;
+    --amber: #FFC15E;
+    --foil: linear-gradient(115deg, #43E8D8 0%, #8B5CFF 34%, #FF5CA8 66%, #FFC15E 100%);
+    --radius: 20px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Noto Sans SC", sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: var(--violet); color: #fff; }
+
+  /* ---------- 氛围底光 ---------- */
+  .aurora {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(46rem 30rem at 82% -6%, rgba(139, 92, 255, 0.22), transparent 62%),
+      radial-gradient(38rem 26rem at -10% 30%, rgba(67, 232, 216, 0.10), transparent 60%),
+      radial-gradient(40rem 30rem at 60% 108%, rgba(255, 92, 168, 0.12), transparent 62%);
+  }
+  .aurora::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(70rem 46rem at 50% 0%, #000 30%, transparent 78%);
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  a { color: inherit; }
+
+  :is(a, button, .card):focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+
+  /* ---------- 顶栏 ---------- */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 30px 0 0;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    font-family: "ZCOOL QingKe HuangYou", "Unbounded", sans-serif;
+    font-size: 21px;
+    letter-spacing: 0.06em;
+  }
+  .logo-chip {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: var(--foil);
+    background-size: 200% 200%;
+    animation: foil-drift 9s ease-in-out infinite;
+    display: grid;
+    place-items: center;
+    color: #14092b;
+    font-size: 17px;
+  }
+  .logo small {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: var(--muted);
+    display: block;
+    line-height: 1;
+    margin-top: 3px;
+  }
+  .nav-badge {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.02);
+  }
+  .nav-badge b { color: var(--cyan); font-weight: 500; }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    align-items: center;
+    gap: 56px;
+    padding: 96px 0 110px;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: "Unbounded", sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 26px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 26px;
+    height: 1px;
+    background: var(--cyan);
+  }
+
+  h1 {
+    font-family: "ZCOOL QingKe HuangYou", "Unbounded", sans-serif;
+    font-weight: 400;
+    font-size: clamp(44px, 6.4vw, 82px);
+    line-height: 1.14;
+    letter-spacing: 0.02em;
+  }
+  h1 .foil-text {
+    background: var(--foil);
+    background-size: 220% 220%;
+    animation: foil-drift 8s ease-in-out infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero p.lead {
+    margin-top: 24px;
+    max-width: 46ch;
+    color: var(--muted);
+    font-size: 17px;
+  }
+
+  .hero-meta {
+    margin-top: 40px;
+    display: flex;
+    gap: 40px;
+  }
+  .hero-meta div {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+  .hero-meta strong {
+    display: block;
+    font-family: "Unbounded", sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: 0;
+    margin-bottom: 4px;
+  }
+
+  /* ---------- Hero 大卡（签名元素）：随机全息闪卡 ---------- */
+  .hero-card-zone { perspective: 1400px; display: grid; place-items: center; }
+
+  .big-card {
+    position: relative;
+    width: min(340px, 78vw);
+    aspect-ratio: 2 / 3;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .big-card.flipped { transform: rotateY(180deg); }
+  .big-card .face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 26px;
+    padding: 26px;
+    display: flex;
+    flex-direction: column;
+    background:
+      radial-gradient(120% 90% at 20% 0%, rgba(139, 92, 255, 0.35), transparent 55%),
+      var(--surface);
+    border: 1px solid var(--line);
+    box-shadow: 0 40px 80px -30px rgba(80, 40, 200, 0.45);
+  }
+  .big-card .face.back {
+    transform: rotateY(180deg);
+    background:
+      radial-gradient(120% 90% at 80% 100%, rgba(255, 92, 168, 0.28), transparent 55%),
+      var(--surface-2);
+  }
+  .card-topline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+  }
+  .card-tag {
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    font-size: 10px;
+  }
+  .card-tag.hot { color: var(--amber); border-color: rgba(255, 193, 94, 0.4); }
+
+  .big-card .a {
+    margin: auto 0;
+    font-size: 15px;
+    line-height: 2;
+    color: var(--text);
+  }
+  .big-card .a em {
+    font-style: normal;
+    color: var(--cyan);
+  }
+
+  /* 正面：分层轻量全息（背景 / 角色 / 卡框 CSS 视差，无 canvas） */
+  .big-card .face.holo-front { padding: 0; overflow: hidden; }
+  .holo-front .layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    will-change: transform;
+  }
+  .holo-front .layer.bg { transform: scale(1.10) translate3d(calc(var(--px, 0) * 5px), calc(var(--py, 0) * 5px), 0); }
+  .holo-front .layer.ch { transform: scale(1.07) translate3d(calc(var(--px, 0) * -13px), calc(var(--py, 0) * -13px), 0); }
+  .holo-front .layer.ui { transform: scale(1.03) translate3d(calc(var(--px, 0) * 3px), calc(var(--py, 0) * 3px), 0); }
+  .holo-front .holo-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(115deg,
+        transparent 32%,
+        rgba(67, 232, 216, 0.14) 44%,
+        rgba(255, 255, 255, 0.16) 50%,
+        rgba(255, 92, 168, 0.12) 56%,
+        transparent 68%);
+    background-size: 240% 240%;
+    background-position: calc(50% + var(--px, 0) * 40%) 50%;
+    mix-blend-mode: screen;
+  }
+  .holo-chip {
+    position: absolute;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--text);
+    background: rgba(14, 11, 33, 0.72);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 12px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .holo-chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--foil); }
+  .holo-chip.name { left: 14px; bottom: 14px; }
+  .holo-chip.hint { right: 14px; bottom: 14px; color: var(--muted); }
+  .card-bottomline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.14em;
+  }
+  .flip-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .flip-hint svg { width: 13px; height: 13px; opacity: 0.7; }
+
+  .big-card::before {
+    /* 全息箔描边 */
+    content: "";
+    position: absolute;
+    inset: -1.5px;
+    border-radius: 27px;
+    padding: 1.5px;
+    background: var(--foil);
+    background-size: 220% 220%;
+    animation: foil-drift 8s ease-in-out infinite;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  @keyframes foil-drift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* ---------- Demo 卡册 ---------- */
+  .grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px 26px;
+    padding-bottom: 110px;
+  }
+  .mini-card {
+    width: 208px;
+    text-decoration: none;
+    display: block;
+  }
+  .mini-frame {
+    position: relative;
+    aspect-ratio: 2 / 3;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.35s, box-shadow 0.35s;
+  }
+  .mini-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+    display: block;
+  }
+  .mini-frame .mini-sheen {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s;
+    background: linear-gradient(115deg,
+      transparent 30%,
+      rgba(67, 232, 216, 0.16) 42%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 92, 168, 0.14) 58%,
+      transparent 70%);
+    mix-blend-mode: screen;
+  }
+  .mini-card:hover .mini-frame, .mini-card:focus-visible .mini-frame {
+    transform: translateY(-6px);
+    border-color: rgba(139, 92, 255, 0.65);
+    box-shadow: 0 22px 40px -18px rgba(80, 40, 200, 0.55);
+  }
+  .mini-card:hover .mini-sheen, .mini-card:focus-visible .mini-sheen { opacity: 1; }
+  .mini-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    padding: 12px 4px 0;
+  }
+  .mini-no {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--muted);
+  }
+  .mini-name {
+    font-family: "ZCOOL QingKe HuangYou", sans-serif;
+    font-size: 15px;
+    letter-spacing: 0.05em;
+    color: var(--text);
+    transition: color 0.3s;
+  }
+  .mini-card:hover .mini-name { color: var(--cyan); }
+  .mini-tag {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: var(--cyan);
+    border: 1px solid rgba(67, 232, 216, 0.3);
+    border-radius: 999px;
+    padding: 3px 8px;
+  }
+
+  @media (max-width: 620px) {
+    .mini-card { width: calc(50% - 13px); }
+  }
+  /* ---------- 页脚 ---------- */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 34px 0 44px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+
+  /* ---------- 入场编排 ---------- */
+  .rise {
+    opacity: 0;
+    transform: translateY(26px);
+    animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  .d1 { animation-delay: 0.05s; } .d2 { animation-delay: 0.15s; }
+  .d3 { animation-delay: 0.3s; }  .d4 { animation-delay: 0.45s; }
+
+  /* ---------- 响应式 ---------- */
+  @media (max-width: 960px) {
+    .hero { grid-template-columns: 1fr; gap: 60px; padding: 70px 0 90px; }
+    .hero-card-zone { order: -1; }
+  }
+  @media (max-width: 620px) {
+    .hero-meta { gap: 26px; }
+    footer { flex-direction: column; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    html { scroll-behavior: auto; }
+    .rise { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"></div>
+
+<div class="wrap">
+  <header class="rise d1">
+    <a class="logo" href="./">
+      <span class="logo-chip" aria-hidden="true">卡</span>
+      <span>闪卡实验场
+        <small>FLASH·CARD·DEMOS</small>
+      </span>
+    </a>
+    <span class="nav-badge">DEMO 收录 <b id="count-badge">0</b> / 持续上新</span>
+  </header>
+
+  <section class="hero">
+    <div>
+      <p class="eyebrow rise d2">Interactive Flash Card Lab</p>
+      <h1 class="rise d2">翻过来，<br />就<span class="foil-text">记住了</span>。</h1>
+      <p class="lead rise d3">
+        这里收藏各种闪卡交互 Demo：翻转、堆叠、间隔重复、.AR 场景……
+        每张卡都是一个独立的小实验，点开就能玩，源码就在仓库里。
+      </p>
+      <div class="hero-meta rise d3">
+        <div><strong id="stat-demos">6</strong>DEMO 在列</div>
+        <div><strong>100%</strong>纯前端实现</div>
+        <div><strong>0</strong>依赖框架约束</div>
+      </div>
+    </div>
+
+    <div class="hero-card-zone rise d4">
+      <div class="big-card" id="hero-card" role="button" tabindex="0" aria-pressed="false" aria-label="随机展示一张全息闪卡，点击或按回车翻面">
+        <div class="face front holo-front">
+          <img class="layer bg" id="hc-bg" alt="" aria-hidden="true" />
+          <img class="layer ch" id="hc-ch" alt="" />
+          <img class="layer ui" id="hc-ui" alt="" aria-hidden="true" />
+          <span class="holo-glow" aria-hidden="true"></span>
+          <span class="holo-chip name"><span class="dot" aria-hidden="true"></span><span id="hc-name">—</span></span>
+          <span class="holo-chip hint">点击翻面</span>
+        </div>
+        <div class="face back">
+          <div class="card-topline"><span id="hc-no">NO.000</span><span id="hc-en">HOLO CARD</span></div>
+          <p class="a">一张<em>四层拆解</em>的全息卡：<br />角色、场景、卡框、结构线，<br />在 Canvas 上按视差深度重新装配。<br /><br />拖动它，光会贴着轮廓流过去。</p>
+          <div class="card-bottomline">
+            <a id="hc-link" class="flip-hint" href="#" style="color:var(--amber); text-decoration:none">了解这张卡 →</a>
+            <span>A</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-label="Demo 列表">
+    <div class="section-head">
+      <h2>DEMO 收录架</h2>
+      <span class="sub">点击卡片进入介绍页</span>
+    </div>
+
+    <div class="grid" id="grid">
+      <a class="mini-card rise d3" href="./holo-card/metalgreymon/index.html">
+        <div class="mini-frame">
+          <img src="./holo-card/metalgreymon/source.png" alt="机械暴龙兽全息闪卡" loading="lazy" />
+          <span class="mini-sheen" aria-hidden="true"></span>
+        </div>
+        <div class="mini-label">
+          <span class="mini-no">NO.007</span>
+          <span class="mini-name">机械暴龙兽</span>
+          <span class="mini-tag">HOLO</span>
+        </div>
+      </a>
+
+      <a class="mini-card rise d3" href="./holo-card/tailmon/index.html">
+        <div class="mini-frame">
+          <img src="./holo-card/tailmon/source.png" alt="迪路兽全息闪卡" loading="lazy" />
+          <span class="mini-sheen" aria-hidden="true"></span>
+        </div>
+        <div class="mini-label">
+          <span class="mini-no">NO.008</span>
+          <span class="mini-name">迪路兽</span>
+          <span class="mini-tag">HOLO</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <span>FLASH CARD DEMOS — 一个不断翻面的仓库</span>
+    <span>卡 = 知识的最小封装单位</span>
+  </footer>
+</div>
+
+<script>
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---- Hero 大卡：点击/回车翻面，未交互前每 6 秒自动翻 ---- */
+  const heroCard = document.getElementById("hero-card");
+  let autoFlip = null;
+
+  function flipHero() {
+    const flipped = heroCard.classList.toggle("flipped");
+    heroCard.setAttribute("aria-pressed", String(flipped));
+  }
+
+  function stopAutoFlip() {
+    if (autoFlip) { clearInterval(autoFlip); autoFlip = null; }
+  }
+
+  if (!reducedMotion) {
+    autoFlip = setInterval(flipHero, 6000);
+  }
+  heroCard.addEventListener("click", () => { stopAutoFlip(); flipHero(); });
+  heroCard.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); stopAutoFlip(); flipHero(); }
+  });
+
+  /* ---- Hero 卡：随机抽取一张全息闪卡（分层素材，无工具栏） ---- */
+  const heroCards = [
+    {
+      no: "NO.007", name: "机械暴龙兽 · 全息卡", en: "METALGREYMON",
+      dir: "./holo-card/metalgreymon/job/assets", url: "./holo-card/metalgreymon/index.html"
+    },
+    {
+      no: "NO.008", name: "迪路兽 · 全息卡", en: "TAILMON",
+      dir: "./holo-card/tailmon/job/assets", url: "./holo-card/tailmon/index.html"
+    }
+  ];
+  const picked = heroCards[Math.floor(Math.random() * heroCards.length)];
+  document.getElementById("hc-bg").src = picked.dir + "/background.png";
+  document.getElementById("hc-ch").src = picked.dir + "/character.png";
+  document.getElementById("hc-ui").src = picked.dir + "/ui.png";
+  document.getElementById("hc-name").textContent = picked.name;
+  document.getElementById("hc-no").textContent = picked.no;
+  document.getElementById("hc-en").textContent = picked.en;
+  document.getElementById("hc-link").href = picked.url;
+  document.querySelector("#hero-card .layer.ch").alt = picked.name + " 立绘";
+
+  // 背面的链接点了就跳转，不要触发翻面
+  document.getElementById("hc-link").addEventListener("click", (e) => e.stopPropagation());
+
+  /* ---- Hero 卡：指针视差（背景/角色/卡框不同幅度） ---- */
+  const heroCanHover = window.matchMedia("(hover: hover)").matches;
+  if (heroCanHover && !reducedMotion) {
+    heroCard.addEventListener("pointermove", (e) => {
+      const r = heroCard.getBoundingClientRect();
+      heroCard.style.setProperty("--px", ((e.clientX - r.left) / r.width - 0.5).toFixed(3));
+      heroCard.style.setProperty("--py", ((e.clientY - r.top) / r.height - 0.5).toFixed(3));
+    });
+    heroCard.addEventListener("pointerleave", () => {
+      heroCard.style.setProperty("--px", 0);
+      heroCard.style.setProperty("--py", 0);
+    });
+  }
+
+  /* ---- 计数（真实数量随 demo 上架而变，此处先与占位一致） ---- */
+  const demoCount = document.querySelectorAll("#grid .mini-card").length;
+  document.getElementById("stat-demos").textContent = demoCount;
+  document.getElementById("count-badge").textContent = demoCount;
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+{
+  "version": 3,
+  "prompt_digest": "1c50e724eae148e57c605e625aac30a1870f620b0ae651f59551987ab58c0a89",
+  "layer_mode": "direct_rgba",
+  "execution": "codex_builtin_image_gen",
+  "name": "Tailmon Holo Card",
+  "status": "completed",
+  "created_at": 1789897232432,
+  "source": {
+    "original": "original.png",
+    "sha256": "fbffcdbff92063b5b5ad48aa73679a4a5a71b0d6b8229cc23b02309253ac8abc",
+    "normalized_sha256": "c9ff298e8cd62b8a69db6471bfa43854c0775d4333c40e6f3c4c46e369700076",
+    "width": 1050,
+    "height": 1600
+  },
+  "repairs": {
+    "background_inpainting": true,
+    "subject_text_cleanup": true
+  },
+  "completed_at": 1789897556851,
+  "warnings": [],
+  "quality_review": "not_automatically_verified",
+  "layers": {
+    "character": {
+      "status": "imported",
+      "error": null,
+      "raw": "raw/character.png",
+      "sha256": "bedc9db4b9f182eab5d06e66422d70af1a889eebeda8fb4385c778bdf3a353ca",
+      "format": "rgba",
+      "imported_at": 1789897515924,
+      "alpha_method": "independent_selection",
+      "alpha_inputs": {
+        "color": "alpha-inputs/character/1789897515207860000-color.png",
+        "color_sha256": "fac9ca692b6b55a479565c5139c7508874683f8c6e419888a5634075d5037de6",
+        "mask": "alpha-inputs/character/1789897515207860000-mask.png",
+        "mask_sha256": "8df0336394312d4cc20cf340724231a6262b97d9104fc79b8291c0fd9c5db58e"
+      },
+      "visual_review": "required: alignment, edge contamination, interior holes, text residue"
+    },
+    "background": {
+      "status": "imported",
+      "error": null,
+      "raw": "raw/background.jpg",
+      "sha256": "41e4f089bc4a756e7fd6731a7e8191f9cf517a344fa8a4d166d2117b5a80a3b0",
+      "format": "rgba",
+      "imported_at": 1789897375768
+    },
+    "ui": {
+      "status": "imported",
+      "error": null,
+      "raw": "raw/ui.png",
+      "sha256": "6bb19fe3d9cb8d63bb1817618a2528b435e2f7a3ed2ffaf4445c7740bde01715",
+      "format": "rgba",
+      "imported_at": 1789897521584,
+      "alpha_method": "independent_selection",
+      "alpha_inputs": {
+        "color": "alpha-inputs/ui/1789897520784509000-color.png",
+        "color_sha256": "598f52a911fa72d0f3ce417e056ff1c77dba0f34fddbe9e86c9530cebf50c173",
+        "mask": "alpha-inputs/ui/1789897520784509000-mask.png",
+        "mask_sha256": "f26e650a3d1ba3e217f480c4b4471a1f493ec5d8531d1c2a0a28446dd570a74a"
+      },
+      "visual_review": "required: alignment, edge contamination, interior holes, text residue"
+    },
+    "structure": {
+      "status": "imported",
+      "error": null,
+      "raw": "raw/structure.jpg",
+      "sha256": "4df1a34ccccdeaad4713baff068a4c3d129a8122ed25cd7375a9c1791248a8bf",
+      "format": "mask",
+      "imported_at": 1789897550940
+    }
+  },
+  "renderer": {
+    "emission": 40,
+    "rgbm_range": 64,
+    "bloom_scales": [
+      0.5,
+      0.25
+    ]
+  }
+}

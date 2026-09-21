@@ -1,0 +1,514 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>Holo Card</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#101113;color:#dfe6ee;font-family:system-ui,sans-serif;overflow:hidden}.room{height:100svh;background:radial-gradient(ellipse at 50% 45%,#25282b,#101113 80%)}.stage{position:relative;width:100%;height:100%;display:grid;place-items:center;perspective:1400px;isolation:isolate}.card{position:relative;width:min(79vw,440px,calc(74svh / 1.4));aspect-ratio:5/7;transform-style:preserve-3d;will-change:transform;cursor:grab;touch-action:none;user-select:none;transform:rotateX(-5deg) rotateY(-12deg)}.card:active{cursor:grabbing}.card:focus-visible{outline:2px solid #d6ef9d;outline-offset:12px;border-radius:18px}.face{position:absolute;inset:0;border-radius:4.5%/3.2%;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 0 0 1px #202329,0 30px 65px #000b;overflow:hidden}.front{transform:translateZ(.2px);background:#101318}.front canvas{display:block;width:100%;height:100%}.back{visibility:hidden;transform:rotateY(180deg) translateZ(.2px);background:#13216a}.back img{width:100%;height:100%;object-fit:fill;display:block}.status{position:absolute;bottom:24px;left:20px;right:20px;text-align:center;font-size:14px;line-height:1.5}.status[hidden]{display:none}
+
+.controls{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);width:min(380px,90vw);display:grid;grid-template-columns:90px 1fr 48px;gap:12px;align-items:center;padding:16px 18px;background:#1b1e22e8;border:1px solid #ffffff18;border-radius:16px;font-size:13px}.controls input{width:100%;accent-color:#d6ef9d}.controls output{text-align:right;font-variant-numeric:tabular-nums}.stage{height:calc(100% - 105px)}
+
+.depth-track{position:relative;min-width:0}.depth-track:before{content:"";position:absolute;left:50%;top:5px;width:1px;height:15px;background:#dfe6ee88;pointer-events:none}.depth-ticks{display:flex;justify-content:space-between;font-size:10px;color:#a4acb5;margin-top:3px}.depth-ticks span:nth-child(2){position:absolute;left:50%;transform:translateX(-50%)}
+
+.controls{bottom:max(12px,env(safe-area-inset-bottom));gap:9px}.interaction{grid-column:1/-1;display:flex;gap:8px}.interaction button{flex:1;min-height:38px;border:1px solid #ffffff25;border-radius:9px;background:#2b3036;color:inherit;font:inherit;cursor:pointer}.interaction button[aria-pressed=true]{background:#d6ef9d;color:#182017}.interaction button:focus-visible{outline:2px solid #d6ef9d;outline-offset:2px}.interaction button:disabled{opacity:.6}#motion-hint{grid-column:1/-1;margin:0;font-size:11px;line-height:1.4;color:#b9c1ca;text-align:center;min-height:16px}.stage{height:calc(100% - 200px);padding-top:env(safe-area-inset-top)}.card{max-height:calc(100svh - 230px);max-width:calc((100svh - 230px) / var(--card-aspect,1.4))}@media (max-height:500px) and (orientation:landscape){.stage{width:60%;height:100%;padding:20px}.card{max-height:88svh;max-width:calc(88svh / var(--card-aspect,1.4))}.controls{left:auto;right:12px;top:50%;bottom:auto;transform:translateY(-50%);width:37%;grid-template-columns:75px 1fr 40px;padding:12px;gap:8px;font-size:11px}}
+
+[hidden]{display:none!important}dialog{width:min(340px,90vw);border:1px solid #ffffff25;border-radius:18px;background:#202429;color:#dfe6ee;text-align:center;padding:24px}dialog::backdrop{background:#0009}dialog h2{font-size:18px}dialog img{display:block;width:220px;max-width:100%;margin:20px auto;border-radius:8px}dialog a{color:#d6ef9d}dialog p{font-size:12px;color:#b9c1ca}.close{position:absolute;right:10px;top:8px;border:0;background:none;color:inherit;font-size:26px;cursor:pointer}.interaction button{font-size:12px}
+
+/* Spacious controls and a card-only immersive view. */
+.controls{row-gap:24px;padding:22px 18px}.interaction{margin-top:2px}#motion-hint{display:none}.stage{height:calc(100% - 220px)}.card{max-height:calc(100svh - 250px);max-width:calc((100svh - 250px) / var(--card-aspect,1.4))}.immersive-toggle{position:fixed;z-index:20;top:calc(16px + env(safe-area-inset-top));right:calc(16px + env(safe-area-inset-right));width:42px;height:42px;display:grid;place-items:center;border:1px solid #ffffff20;border-radius:50%;color:#dfe6ee;background:#202429b3;cursor:pointer;touch-action:manipulation}.immersive-toggle:focus-visible{outline:2px solid #d6ef9d;outline-offset:3px}.eye-slash{display:none}.immersive .eye-slash{display:block}.immersive .controls,.immersive .status{display:none}.immersive .stage{height:100%;width:100%;padding:0}.immersive .card{width:min(88vw,calc(84svh / var(--card-aspect,1.4)))!important;max-width:none;max-height:none}@media (max-height:500px) and (orientation:landscape){.controls{row-gap:18px}.stage{height:100%}.card{max-height:88svh;max-width:calc(88svh / var(--card-aspect,1.4))}}
+
+/* Oversized transparent foreground surface; background clipping is done in the shader. */
+.front{overflow:visible;background:transparent}.front canvas{position:absolute;width:160%;height:160%;max-width:none;left:-30%;top:-30%;border-radius:0;pointer-events:none}
+</style></head><body><main class="room"><button id="immersive" class="immersive-toggle" type="button" aria-label="Enter immersive mode" aria-pressed="false" title="Immersive mode"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m4 4 16 16"/></svg></button><div class="stage"><div class="card" tabindex="0" role="button" aria-label="Click to flip, drag to rotate, or use arrow keys"><div class="face front"><canvas></canvas></div><div class="face back"><img alt="Card back" draggable="false"></div></div></div><aside class="controls" aria-label="Card effects"><label for="depth">Depth</label><div class="depth-track"><input id="depth" type="range" min="-3" max="3" step="0.05" value="0"><span class="depth-ticks" aria-hidden="true"><span></span><span>0</span><span></span></span></div><output for="depth">0.00×</output><label for="brightness">Contour glow</label><input id="brightness" type="range" min="0" max="3" step="0.05" value="0.15"><output for="brightness">0.15×</output><div class="interaction"><button id="motion" type="button" aria-pressed="false">Enable motion</button><button id="mobile" type="button" hidden>Phone preview</button><button id="reset" type="button">Recenter</button></div><p id="motion-hint" aria-live="polite">Drag to rotate · Tap to flip</p></aside><dialog id="mobile-dialog"><form method="dialog"><button aria-label="Close" class="close">×</button></form><h2>Open on your phone</h2><img id="mobile-qr" alt="Scan to preview this card on your phone"><a id="mobile-link" target="_blank" rel="noopener">Open preview</a><p>Each device has its own controls.</p></dialog><p class="status" role="status">Loading card…</p></main><script type="module">globalThis.HOLO_MANIFEST={"name": "Tailmon Holo Card", "width": 1050, "height": 1600, "assets": {"character": "assets/character.png", "background": "assets/background.png", "ui": "assets/ui.png", "structure": "assets/structure.png"}, "back": "back.png"};
+// Snapshot of the shared HDR card renderer; input textures are materialized RGBA layers.
+// Lightweight, view-dependent layered card. No 3D engine or video textures.
+const vertex = `attribute vec2 position; varying vec2 uv; void main(){uv=position*.5+.5;gl_Position=vec4(position,0.,1.);}`;
+const fragment = `precision highp float;
+varying vec2 uv; uniform sampler2D art,bg,uiTex,bloomNear,bloomWide,structureTex; uniform float extracted, cardAspect; uniform vec2 view; uniform float depth, contourBrightness, power, glowPass, pixelWidth;
+vec4 encodeHDR(vec3 c){float m=clamp(ceil(max(max(c.r,c.g),c.b)/64.*255.)/255.,1./255.,1.);return vec4(c/(64.*m),m);}
+vec3 decodeHDR(vec4 c){return c.rgb*c.a*64.;}
+vec3 hsv(vec3 c){vec4 K=vec4(0.,-1./3.,2./3.,-1.);vec4 p=mix(vec4(c.bg,K.wz),vec4(c.gb,K.xy),step(c.b,c.g));vec4 q=mix(vec4(p.xyw,c.r),vec4(c.r,p.yzx),step(p.x,c.r));float d=q.x-min(q.w,q.y);return vec3(abs(q.z+(q.w-q.y)/(6.*d+.00001)),d/(q.x+.00001),q.x);}
+float ink(vec2 p){vec4 c=texture2D(art,p);vec3 h=hsv(pow(c.rgb,vec3(2.2)));return smoothstep(.035,.065,h.x)*(1.-smoothstep(.17,.21,h.x))*smoothstep(.4,.67,h.y)*smoothstep(.065,.25,h.z)*c.a;}
+float structure(vec2 p){if(extracted>.5)return texture2D(structureTex,p).a;float a=ink(p);float b=min(min(ink(p+vec2(.0025,0.)),ink(p-vec2(.0025,0.))),min(ink(p+vec2(0.,.0018)),ink(p-vec2(0.,.0018))));return smoothstep(.025,.22,max(0.,a-b));}
+vec3 rainbow(float t){return .52+.48*cos(6.28318*(t+vec3(0.,.33,.67)));}
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float band(vec2 p){float f=p.x*.65+p.y*.4+view.x*1.9+view.y*.85;return pow(max(0.,1.-abs(fract(f+.16)-.5)*2.),3.);}
+void main(){
+ vec2 p=(uv-.5)*1.6+.5;vec2 u=p;
+ vec2 edge=abs((p-.5)*vec2(1.,cardAspect))-(vec2(.5,cardAspect*.5)-vec2(.045));
+ float edgeDistance=length(max(edge,0.))+min(max(edge.x,edge.y),0.)-.045;
+ float cardMask=1.-smoothstep(-pixelWidth,pixelWidth,edgeDistance);
+ float foregroundMask=depth>0.?1.:cardMask;vec2 a=(p-.5)*1.25+.5+view*.40;vec2 b=(p-.5)*.5+.5-view*.25;
+ if(extracted>.5){a=p-view*(depth<0.?.06:.08)*depth;u=p-view*.14*max(depth,0.);b=(p-.5)*.5+.5-view*.25;}
+ vec4 ch=texture2D(art,a);ch.a*=step(0.,a.x)*step(a.x,1.)*step(0.,a.y)*step(a.y,1.);
+ ch.a*=foregroundMask;
+ vec4 background=texture2D(bg,b);background.a*=cardMask;background.a*=step(0.,b.x)*step(b.x,1.)*step(0.,b.y)*step(b.y,1.);
+ float baseAlpha=cardMask+(1.-cardMask)*ch.a;
+ vec3 base=mix(background.rgb*cardMask,ch.rgb,ch.a);
+ vec3 ui=texture2D(uiTex,u).rgb;vec3 uh=hsv(ui);float um=max(smoothstep(.105,.23,uh.y),1.-smoothstep(.35,.62,uh.z));
+ if(extracted>.5)um=texture2D(uiTex,u).a*step(0.,u.x)*step(u.x,1.)*step(0.,u.y)*step(u.y,1.);
+ // The text/frame plate has its own rounded boundary, moving with its UVs.
+ vec2 uiEdge=abs((u-.5)*vec2(1.,cardAspect))-(vec2(.5,cardAspect*.5)-vec2(.045));
+ float uiDistance=length(max(uiEdge,0.))+min(max(uiEdge.x,uiEdge.y),0.)-.045;
+ float uiMask=1.-smoothstep(-pixelWidth,pixelWidth,uiDistance);
+ um*=uiMask*foregroundMask;
+ float finalAlpha=clamp(baseAlpha+(1.-baseAlpha)*um,0.,1.);
+ // Transparent overscan must contain zero RGB, including on Safari/Metal.
+ if(finalAlpha<=0.){gl_FragColor=glowPass>.5?encodeHDR(vec3(0.)):vec4(0.);return;}
+ float phase=p.x*.62+p.y*.36+view.x*1.9+view.y*.8;
+ vec3 spectrum=rainbow(phase*2.2);float light=band(p);
+ float micro=pow(hash(floor(p*vec2(620.,868.))),28.);
+ base=mix(base,base*(.64+spectrum*.7)+spectrum*.07*baseAlpha,light*.48*power);
+ float line=structure(a)*ch.a;
+ float envelope=smoothstep(.025,.42,light);
+ vec3 emission=(spectrum*.85+vec3(.15))*line*envelope*power*40.*contourBrightness;
+ vec2 cell=fract(p*vec2(24.,34.))-.5;float seed=hash(floor(p*vec2(24.,34.)));float star=pow(max(0.,1.-abs(cell.x)*18.),14.)*pow(max(0.,1.-abs(cell.y)*2.),6.)+pow(max(0.,1.-abs(cell.y)*18.),14.)*pow(max(0.,1.-abs(cell.x)*2.),6.);
+ base+=spectrum*(star*step(.965,seed)*light*.65+micro*light*.12)*power*(1.-ch.a)*cardMask;
+ base=mix(base,ui,um);
+
+ float glare=pow(max(0.,1.-length((p-vec2(.5+view.x,.6+view.y))*vec2(1.,.75))),5.);
+ base+=vec3(glare*.12*power)*finalAlpha;
+ base/=max(finalAlpha,.0001);
+ // Concentric rounded border in card-width units, matching the CSS outer radius.
+ // Outer radius .045, uniform inset .015, inner radius .030.
+ vec2 corner=abs((p-.5)*vec2(1.,cardAspect))-(vec2(.485,cardAspect*.5-.015)-vec2(.030));
+ float distanceToInner=length(max(corner,0.))+min(max(corner.x,corner.y),0.)-.030;
+ float inside=1.-smoothstep(-pixelWidth,pixelWidth,distanceToInner);
+ float rim=(1.-inside)*(1.-extracted);
+ base=mix(base,mix(vec3(.76,.67,.32),spectrum*.5+.5,.35*power)+glare*.15,rim);
+ emission*=(1.-um)*foregroundMask;
+ if(glowPass>.5){gl_FragColor=encodeHDR(max(emission-vec3(1.),vec3(0.)));return;}
+ vec3 bloom=decodeHDR(texture2D(bloomNear,uv))*.55+decodeHDR(texture2D(bloomWide,uv))*.8;
+ bloom*=foregroundMask*(1.-um)*line;
+ // Display mapping is applied AFTER the HDR light and two-scale bloom are composed.
+ vec3 linear=pow(clamp(base,0.,1.),vec3(2.2));
+ vec3 combined=1.-(1.-linear)*exp(-(emission*.38+bloom*.85));
+ gl_FragColor=vec4(pow(clamp(combined,0.,1.),vec3(1./2.2))*finalAlpha,finalAlpha);
+}`;
+const blurFragment = `precision highp float; varying vec2 uv;uniform sampler2D source;uniform vec2 stepSize;
+vec3 decodeHDR(vec4 c){return c.rgb*c.a*64.;}
+vec4 encodeHDR(vec3 c){float m=clamp(ceil(max(max(c.r,c.g),c.b)/64.*255.)/255.,1./255.,1.);return vec4(c/(64.*m),m);}
+void main(){vec3 c=vec3(0.);float total=0.;for(int i=-4;i<=4;i++){float f=float(i);float w=exp(-f*f/8.);c+=decodeHDR(texture2D(source,uv+stepSize*f))*w;total+=w;}gl_FragColor=encodeHDR(c/total);}`;
+async function createCardRenderer(canvas, assets) {
+  const gl = canvas.getContext('webgl', {
+    alpha: true,
+    premultipliedAlpha: true,
+    antialias: false,
+    powerPreference: 'high-performance',
+    preserveDrawingBuffer: true,
+  });
+  if (!gl) throw new Error('WebGL unavailable');
+  const shaders = [],
+    programs = [],
+    textures = [],
+    frames = [];
+  const buffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
+    gl.STATIC_DRAW,
+  );
+  function compile(type, source) {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
+      throw new Error(gl.getShaderInfoLog(shader) || 'Shader error');
+    shaders.push(shader);
+    return shader;
+  }
+  function program(source) {
+    const p = gl.createProgram();
+    gl.attachShader(p, compile(gl.VERTEX_SHADER, vertex));
+    gl.attachShader(p, compile(gl.FRAGMENT_SHADER, source));
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS))
+      throw new Error('Shader link error');
+    programs.push(p);
+    return p;
+  }
+  const scene = program(fragment),
+    blur = program(blurFragment);
+  function use(p) {
+    gl.useProgram(p);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    const a = gl.getAttribLocation(p, 'position');
+    gl.enableVertexAttribArray(a);
+    gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
+  }
+  function texture(filter) {
+    const t = gl.createTexture();
+    textures.push(t);
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    return t;
+  }
+  const images = await Promise.all(
+    ['character', 'background', 'ui', 'structure'].map(
+      (name) =>
+        new Promise((resolve, reject) => {
+          const image = new Image();
+          image.onload = () => resolve(image);
+          image.onerror = () => reject(new Error('Asset unavailable'));
+          image.src = assets[name];
+        }),
+    ),
+  );
+  const artTextures = images.map((image) => {
+    const t = texture(gl.LINEAR);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    return t;
+  });
+  // Full-resolution artwork and line core; bloom only is computed at half/quarter resolution.
+  canvas.width = window.innerWidth < 640 ? 1036 : 1408;
+  canvas.height = Math.round(
+    canvas.width * (assets ? images[0].height / images[0].width : 1.4),
+  );
+  function target(scale) {
+    const w = Math.round(canvas.width * scale),
+      h = Math.round(canvas.height * scale);
+    const t = texture(gl.NEAREST);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      w,
+      h,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      null,
+    );
+    const f = gl.createFramebuffer();
+    frames.push(f);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, f);
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
+      t,
+      0,
+    );
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE)
+      throw new Error('Bloom framebuffer unavailable');
+    return { t, f, w, h };
+  }
+  const emission = target(0.5),
+    temp = target(0.5),
+    near = target(0.5),
+    wideTemp = target(0.25),
+    wide = target(0.25);
+  const sceneU = {
+    view: gl.getUniformLocation(scene, 'view'),
+    power: gl.getUniformLocation(scene, 'power'),
+    depth: gl.getUniformLocation(scene, 'depth'),
+    contourBrightness: gl.getUniformLocation(scene, 'contourBrightness'),
+    pass: gl.getUniformLocation(scene, 'glowPass'),
+  };
+  use(scene);
+  gl.uniform1f(
+    gl.getUniformLocation(scene, 'cardAspect'),
+    canvas.height / canvas.width,
+  );
+  gl.uniform1f(gl.getUniformLocation(scene, 'extracted'), assets ? 1 : 0);
+  gl.uniform1i(gl.getUniformLocation(scene, 'structureTex'), 5);
+  gl.uniform1f(gl.getUniformLocation(scene, 'pixelWidth'), 1 / canvas.width);
+  ['art', 'bg', 'uiTex', 'bloomNear', 'bloomWide'].forEach((name, i) =>
+    gl.uniform1i(gl.getUniformLocation(scene, name), i),
+  );
+  use(blur);
+  gl.uniform1i(gl.getUniformLocation(blur, 'source'), 0);
+  const step = gl.getUniformLocation(blur, 'stepSize');
+  function bind(t, unit = 0) {
+    gl.activeTexture(gl.TEXTURE0 + unit);
+    gl.bindTexture(gl.TEXTURE_2D, t);
+  }
+  function blurPass(src, dst, x, y) {
+    use(blur);
+    bind(src.t);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, dst.f);
+    gl.viewport(0, 0, dst.w, dst.h);
+    gl.uniform2f(step, x / src.w, y / src.h);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+  return {
+    draw(x, y, strength, depth = 0, contourBrightness = 0.15) {
+      use(scene);
+      artTextures.forEach((t, i) => bind(t, i === 3 ? 5 : i));
+      bind(near.t, 3);
+      bind(wide.t, 4);
+      gl.uniform2f(
+        sceneU.view,
+        Math.sin((y * Math.PI) / 180) * 0.65,
+        Math.sin((x * Math.PI) / 180) * 0.65,
+      );
+      gl.uniform1f(sceneU.power, strength);
+      gl.uniform1f(sceneU.depth, depth);
+      gl.uniform1f(sceneU.contourBrightness, contourBrightness);
+      gl.uniform1f(sceneU.pass, 1);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, emission.f);
+      gl.viewport(0, 0, emission.w, emission.h);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      blurPass(emission, temp, 1.2, 0);
+      blurPass(temp, near, 0, 1.2);
+      blurPass(near, wideTemp, 5, 0);
+      blurPass(wideTemp, wide, 0, 2.5);
+      use(scene);
+      artTextures.forEach((t, i) => bind(t, i === 3 ? 5 : i));
+      bind(near.t, 3);
+      bind(wide.t, 4);
+      gl.uniform1f(sceneU.pass, 0);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+    },
+    dispose() {
+      frames.forEach((f) => gl.deleteFramebuffer(f));
+      textures.forEach((t) => gl.deleteTexture(t));
+      shaders.forEach((s) => gl.deleteShader(s));
+      programs.forEach((p) => gl.deleteProgram(p));
+      gl.deleteBuffer(buffer);
+    },
+  };
+}
+
+globalThis.HOLO_CREATE_RENDERER=createCardRenderer;
+const canvas = document.querySelector('canvas'),
+  card = document.querySelector('.card'),
+  front = document.querySelector('.front'),
+  back = document.querySelector('.back'),
+  status = document.querySelector('.status');
+const immersiveButton = document.querySelector('#immersive');
+function setImmersive(active) {
+  document.body.classList.toggle('immersive', active);
+  immersiveButton.setAttribute('aria-pressed', String(active));
+  immersiveButton.setAttribute('aria-label', active ? 'Exit immersive mode' : 'Enter immersive mode');
+  immersiveButton.title = active ? 'Exit immersive mode' : 'Immersive mode';
+}
+immersiveButton.addEventListener('click', () => setImmersive(!document.body.classList.contains('immersive')));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') setImmersive(false); });
+let renderer, raf;
+let depth = 0, contourBrightness = 0.15, dirty = true;
+for (const input of document.querySelectorAll(".controls input")) {
+  input.addEventListener("input", () => {
+    if(input.id === "depth") depth = Number(input.value);
+    else contourBrightness = Number(input.value);
+    document.querySelector(`output[for="${input.id}"]`).value = (input.id === "depth" && Number(input.value) > 0 ? "+" : "") + Number(input.value).toFixed(2) + "×";
+    dirty = true;
+  });
+}
+try {
+  const query = location.search;
+  const factory =
+    globalThis.HOLO_CREATE_RENDERER ??
+    (await import('./renderer.js' + query)).createCardRenderer;
+  const manifest =
+    globalThis.HOLO_MANIFEST ??
+    (await fetch('manifest.json' + query).then((r) => {
+      if (!r.ok) throw new Error('Preview expired');
+      return r.json();
+    }));
+  const mobileButton = document.querySelector('#mobile');
+  if (manifest.previewUrl && manifest.previewQr) {
+    const url = new URL(manifest.previewUrl);
+    if (url.protocol === 'https:') {
+      mobileButton.hidden = false;
+      document.querySelector('#mobile-qr').src = manifest.previewQr;
+      document.querySelector('#mobile-link').href = url.href;
+      mobileButton.addEventListener('click', () => document.querySelector('#mobile-dialog').showModal());
+    }
+  }
+  document.title = manifest.name + ' · Holo Card';
+  back.querySelector('img').src = manifest.back ?? 'back.png' + query;
+  renderer = await factory(canvas, manifest.assets);
+  const aspect = manifest.height / manifest.width;
+  card.style.setProperty('--card-aspect', aspect);
+  card.style.aspectRatio = `1 / ${aspect}`;
+  card.style.width = `min(79vw,440px,calc(74svh / ${aspect}))`;
+  status.hidden = true;
+  const m = {
+    x: -5,
+    y: -12,
+    tx: -5,
+    ty: -12,
+    base: 0,
+    down: false,
+    px: 0,
+    py: 0,
+    moved: false,
+    pointer: null,
+    startX: 0, startY: 0,
+  };
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const motionButton = document.querySelector('#motion');
+  const resetButton = document.querySelector('#reset');
+  const hint = document.querySelector('#motion-hint');
+  let motionEnabled = false, origin = null, sensorX = 0, sensorY = 0, sensorTimer, orientationSeen = false;
+  const wrap = v => ((v + 180) % 360 + 360) % 360 - 180;
+  const clamp = v => Math.max(-28, Math.min(28, v));
+  function calibrate() {
+    origin = null;
+    sensorX = sensorY = 0;
+    m.tx = 0; m.ty = m.base;
+  }
+  function stopMotion(message = 'Drag to rotate · Tap to flip') {
+    motionEnabled = false;
+    clearTimeout(sensorTimer);
+    removeEventListener('deviceorientation', onOrientation);
+    removeEventListener('devicemotion', onMotion);
+    motionButton.textContent = 'Enable motion';
+    motionButton.setAttribute('aria-pressed', 'false');
+    hint.textContent = message;
+  }
+  function onOrientation(e) {
+    if (!motionEnabled || document.hidden || !Number.isFinite(e.beta) || !Number.isFinite(e.gamma)) return;
+    orientationSeen = true;
+    clearTimeout(sensorTimer);
+    if (!origin) origin = { beta: e.beta, gamma: e.gamma };
+    const b = wrap(e.beta - origin.beta), g = wrap(e.gamma - origin.gamma);
+    const a = (screen.orientation?.angle ?? window.orientation ?? 0) * Math.PI / 180;
+    sensorX = clamp(-(b * Math.cos(a) + g * Math.sin(a)) * 0.85);
+    sensorY = clamp((g * Math.cos(a) - b * Math.sin(a)) * 0.85);
+    hint.textContent = 'Motion active · Tilt your phone · Drag anytime';
+  }
+  function onMotion(e) {
+    if (orientationSeen || !motionEnabled || document.hidden) return;
+    const g = e.accelerationIncludingGravity;
+    if (!g || ![g.x, g.y, g.z].every(Number.isFinite) || Math.hypot(g.x, g.y, g.z) < 1) return;
+    // Gravity provides stable relative tilt when orientation events are unavailable.
+    onOrientation({ beta: Math.atan2(-g.y, Math.hypot(g.x, g.z)) * 180 / Math.PI,
+                    gamma: Math.atan2(g.x, -g.z) * 180 / Math.PI });
+    orientationSeen = false;
+  }
+  motionButton.addEventListener('click', async () => {
+    if (motionEnabled) { stopMotion(); return; }
+    if (!isSecureContext) { hint.textContent = 'Open the HTTPS preview link to enable motion. Drag is available.'; return; }
+    if (!globalThis.DeviceOrientationEvent && !globalThis.DeviceMotionEvent) { hint.textContent = 'Motion is unavailable on this device. Drag to rotate.'; return; }
+    motionButton.disabled = true;
+    try {
+      // Start both requests synchronously within the tap, before awaiting either.
+      const requests = [globalThis.DeviceOrientationEvent, globalThis.DeviceMotionEvent]
+        .filter(Boolean).map(api => typeof api.requestPermission === 'function'
+          ? api.requestPermission() : Promise.resolve('granted'));
+      const permissions = await Promise.allSettled(requests);
+      if (!permissions.some(result => result.status === 'fulfilled' && result.value === 'granted')) {
+        hint.textContent = 'Motion permission was not granted. Allow Motion & Orientation in Safari settings, then reload. Drag still works.';
+        return;
+      }
+      orientationSeen = false;
+      calibrate();
+      motionEnabled = true;
+      motionButton.textContent = 'Disable motion';
+      motionButton.setAttribute('aria-pressed', 'true');
+      hint.textContent = 'Hold comfortably, then tilt your phone…';
+      addEventListener('deviceorientation', onOrientation);
+      addEventListener('devicemotion', onMotion);
+      sensorTimer = setTimeout(() => stopMotion('No sensor data. Open in Safari or Chrome directly, allow Motion & Orientation, then retry. Drag still works.'), 5000);
+    } catch {
+      stopMotion('Motion could not start. Check browser permissions, or drag.');
+    } finally { motionButton.disabled = false; }
+  });
+  resetButton.addEventListener('click', calibrate);
+  screen.orientation?.addEventListener('change', calibrate);
+  addEventListener('orientationchange', calibrate);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) calibrate(); });
+
+  const flip = () => {
+    m.base += 180;
+    m.tx = 0;
+    m.ty = m.base;
+  };
+  card.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      flip();
+    }
+    if (e.key.startsWith('Arrow')) {
+      e.preventDefault();
+      if (e.key === 'ArrowLeft') m.ty -= 8;
+      if (e.key === 'ArrowRight') m.ty += 8;
+      if (e.key === 'ArrowUp') m.tx = Math.min(45, m.tx + 8);
+      if (e.key === 'ArrowDown') m.tx = Math.max(-45, m.tx - 8);
+    }
+  });
+  card.addEventListener('pointerdown', (e) => {
+    if (m.pointer !== null || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    m.pointer = e.pointerId;
+    m.startX = e.clientX; m.startY = e.clientY;
+    m.down = true;
+    m.px = e.clientX;
+    m.py = e.clientY;
+    m.moved = false;
+    card.setPointerCapture(e.pointerId);
+  });
+  card.addEventListener('pointermove', (e) => {
+    if (m.down && m.pointer === e.pointerId) {
+      const dx = e.clientX - m.px,
+        dy = e.clientY - m.py;
+      if (Math.hypot(e.clientX - m.startX, e.clientY - m.startY) > 5) m.moved = true;
+      m.ty += dx * 0.62;
+      m.tx = Math.max(-50, Math.min(50, m.tx - dy * 0.3));
+      m.px = e.clientX;
+      m.py = e.clientY;
+    } else if (!m.down && !motionEnabled && e.pointerType === 'mouse') {
+      m.tx = (-(e.clientY - innerHeight / 2) / innerHeight) * 30;
+      m.ty = m.base + ((e.clientX - innerWidth / 2) / innerWidth) * 40;
+    }
+  });
+  card.addEventListener('pointerup', (e) => {
+    if (m.pointer !== e.pointerId) return;
+    m.pointer = null;
+    m.down = false;
+    if (card.hasPointerCapture(e.pointerId))
+      card.releasePointerCapture(e.pointerId);
+    if (!m.moved) flip();
+    else m.base = Math.round(m.ty / 180) * 180;
+  });
+  const cancelDrag = () => { m.pointer = null; m.down = false; m.base = Math.round(m.ty / 180) * 180; };
+  card.addEventListener('pointercancel', cancelDrag);
+  card.addEventListener('lostpointercapture', () => { if (m.down) cancelDrag(); });
+  card.addEventListener('pointerleave', () => {
+    if (!m.down && !motionEnabled) {
+      m.tx = 0;
+      m.ty = m.base;
+    }
+  });
+  let lastX = 999,
+    lastY = 999;
+  function frame() {
+    if (motionEnabled && !m.down) { m.tx = sensorX; m.ty = m.base + sensorY; }
+    const ease = motionEnabled ? 0.115 : reduced ? 1 : 0.115;
+    m.x += (m.tx - m.x) * ease;
+    m.y += (m.ty - m.y) * ease;
+    card.style.transform = `rotateX(${m.x}deg) rotateY(${m.y}deg)`;
+    const visible =
+      Math.cos((m.y * Math.PI) / 180) * Math.cos((m.x * Math.PI) / 180) > 0.001;
+    front.style.visibility = visible ? 'visible' : 'hidden';
+    back.style.visibility = visible ? 'hidden' : 'visible';
+    if (
+      !document.hidden &&
+      visible &&
+      (dirty || Math.abs(m.x - lastX) > 0.015 || Math.abs(m.y - lastY) > 0.015)
+    ) {
+      renderer.draw(m.x, m.y, 1, depth, contourBrightness);
+      dirty = false;
+      lastX = m.x;
+      lastY = m.y;
+    }
+    raf = requestAnimationFrame(frame);
+  }
+  raf = requestAnimationFrame(frame);
+  addEventListener(
+    'pagehide',
+    () => {
+      cancelAnimationFrame(raf);
+      stopMotion();
+      renderer.dispose();
+    },
+    { once: true },
+  );
+} catch {
+  status.hidden = false;
+  status.textContent =
+    'Unable to load the card. Refresh the preview link or open the downloaded HTML file.';
+}
+</script></body></html>

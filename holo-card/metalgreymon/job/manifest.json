@@ -1,0 +1,12 @@
+{
+  "name": "MetalGreymon Holo Card",
+  "width": 1066,
+  "height": 1600,
+  "assets": {
+    "character": "./assets/character.png",
+    "background": "./assets/background.png",
+    "ui": "./assets/ui.png",
+    "structure": "./assets/structure.png"
+  },
+  "back": "back.png"
+}
