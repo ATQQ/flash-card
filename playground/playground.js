@@ -253,9 +253,10 @@
   }
 
   // ---------- 微调 ----------
+  let dirty = true; // 滑杆改动置位，渲染循环消费
   function bindSlider(key, fmt) {
     const el = sliders[key], out = el.nextElementSibling;
-    el.addEventListener('input', () => { state[key] = +el.value; out.textContent = fmt(+el.value); });
+    el.addEventListener('input', () => { state[key] = +el.value; out.textContent = fmt(+el.value); dirty = true; });
   }
   bindSlider('charScale', (v) => v.toFixed(2));
   bindSlider('charX', (v) => Math.round(v));
@@ -272,55 +273,84 @@
     });
   });
 
-  // ---------- 视差（拖拽 / 悬停） + 翻面（轻点） + rAF 渲染循环 ----------
-  const cur = { x: 0, y: 0 }, tgt = { x: 0, y: 0 };
-  let pid = null, downX = 0, downY = 0, dragged = false;
-
-  scene.addEventListener('pointerdown', (e) => {
-    pid = e.pointerId; downX = e.clientX; downY = e.clientY; dragged = false;
-    try { scene.setPointerCapture(pid); } catch (_) {}
-  });
-  scene.addEventListener('pointermove', (e) => {
-    if (pid !== null && Math.hypot(e.clientX - downX, e.clientY - downY) > 6) dragged = true;
-    const r = scene.getBoundingClientRect();
-    const nx = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width) * 2 - 1));
-    const ny = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height) * 2 - 1));
-    // 水平 → y(偏航)，垂直 → x(俯仰)，与实机预览一致
-    tgt.y = nx * 30; tgt.x = -ny * 30;
-  });
-  scene.addEventListener('pointerup', () => {
-    if (pid !== null && !dragged) card.classList.toggle('flipped');
-    pid = null;
-  });
-  scene.addEventListener('pointercancel', () => { pid = null; });
-  scene.addEventListener('pointerleave', () => { tgt.x = 0; tgt.y = 0; });
-
-  $('btnFlip').addEventListener('click', () => card.classList.toggle('flipped'));
-
-  // 正/背面按实际 Y 转角显隐（与介绍页活卡 job/index.html 的 frame() 同款做法）：
-  // .front overflow:visible 放大辉光后，backface-visibility 在合成层上不可靠
-  const inner = card.querySelector('.inner');
+  // ---------- 交互：拖拽 360° 旋转 / 悬停视差 / 轻点翻面（与介绍页活卡 job/index.html 一致） ----------
   const faceFront = card.querySelector('.face.front');
   const faceBack = card.querySelector('.face.back');
-  function syncFaces() {
-    const t = getComputedStyle(inner).transform;
-    const cosY = t && t !== 'none' ? new DOMMatrixReadOnly(t).m11 : 1; // rotateY(θ): m11=cosθ
-    const frontVisible = cosY > 0;
-    faceFront.style.visibility = frontVisible ? 'visible' : 'hidden';
-    faceBack.style.visibility = frontVisible ? 'hidden' : 'visible';
-  }
+  const m = {
+    x: -5, y: -12, tx: -5, ty: -12, base: 0,
+    down: false, px: 0, py: 0, moved: false, pointer: null, startX: 0, startY: 0,
+  };
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const flip = () => { m.base += 180; m.tx = 0; m.ty = m.base; };
 
+  card.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }
+    if (e.key.startsWith('Arrow')) {
+      e.preventDefault();
+      if (e.key === 'ArrowLeft') m.ty -= 8;
+      if (e.key === 'ArrowRight') m.ty += 8;
+      if (e.key === 'ArrowUp') m.tx = Math.min(45, m.tx + 8);
+      if (e.key === 'ArrowDown') m.tx = Math.max(-45, m.tx - 8);
+    }
+  });
+  card.addEventListener('pointerdown', (e) => {
+    if (m.pointer !== null || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    m.pointer = e.pointerId;
+    m.startX = e.clientX; m.startY = e.clientY;
+    m.down = true; m.px = e.clientX; m.py = e.clientY; m.moved = false;
+    card.setPointerCapture(e.pointerId);
+  });
+  card.addEventListener('pointermove', (e) => {
+    if (m.down && m.pointer === e.pointerId) {
+      const dx = e.clientX - m.px, dy = e.clientY - m.py;
+      if (Math.hypot(e.clientX - m.startX, e.clientY - m.startY) > 5) m.moved = true;
+      m.ty += dx * 0.62;                                // 偏航自由旋转，可转任意圈
+      m.tx = Math.max(-50, Math.min(50, m.tx - dy * 0.3));
+      m.px = e.clientX; m.py = e.clientY;
+    } else if (!m.down && e.pointerType === 'mouse') {
+      m.tx = (-(e.clientY - innerHeight / 2) / innerHeight) * 30;
+      m.ty = m.base + ((e.clientX - innerWidth / 2) / innerWidth) * 40;
+    }
+  });
+  card.addEventListener('pointerup', (e) => {
+    if (m.pointer !== e.pointerId) return;
+    m.pointer = null; m.down = false;
+    if (card.hasPointerCapture(e.pointerId)) card.releasePointerCapture(e.pointerId);
+    if (!m.moved) flip();                               // 轻点 = 翻面
+    else m.base = Math.round(m.ty / 180) * 180;         // 拖拽松手吸附最近 180°，任意角度停留
+  });
+  const cancelDrag = () => { m.pointer = null; m.down = false; m.base = Math.round(m.ty / 180) * 180; };
+  card.addEventListener('pointercancel', cancelDrag);
+  card.addEventListener('lostpointercapture', () => { if (m.down) cancelDrag(); });
+  card.addEventListener('pointerleave', () => {
+    if (!m.down) { m.tx = 0; m.ty = m.base; }
+  });
+
+  $('btnFlip').addEventListener('click', flip);
+
+  // 渲染循环：卡片 CSS 3D 旋转 + 按转角显隐正/背面；depth=0 使内容全部裁进卡框
+  let lastX = 999, lastY = 999;
   (function frame() {
-    cur.x += (tgt.x - cur.x) * 0.115;
-    cur.y += (tgt.y - cur.y) * 0.115;
-    syncFaces();
-    if (renderer) {
-      renderer.draw(cur.x, cur.y, state.foil, 1, 0.15 * state.foil, {
+    const ease = reduced ? 1 : 0.115;
+    m.x += (m.tx - m.x) * ease;
+    m.y += (m.ty - m.y) * ease;
+    card.style.transform = `rotateX(${m.x}deg) rotateY(${m.y}deg)`;
+    const visible =
+      Math.cos((m.y * Math.PI) / 180) * Math.cos((m.x * Math.PI) / 180) > 0.001;
+    faceFront.style.visibility = visible ? 'visible' : 'hidden';
+    faceBack.style.visibility = visible ? 'hidden' : 'visible';
+    if (
+      !document.hidden && visible && renderer &&
+      (dirty || Math.abs(m.x - lastX) > 0.015 || Math.abs(m.y - lastY) > 0.015)
+    ) {
+      renderer.draw(m.x, m.y, state.foil, 0, 0.15 * state.foil, {
         charScale: state.charScale,
         charX: (state.charX / 100) * 0.6,
         charY: (state.charY / 100) * 0.6,
         bgScale: state.bgScale,
       });
+      dirty = false;
+      lastX = m.x; lastY = m.y;
     }
     requestAnimationFrame(frame);
   })();
