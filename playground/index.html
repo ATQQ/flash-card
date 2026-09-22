@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlayGround · 闪卡工作台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Unbounded:wght@400;600&family=Noto+Sans+SC:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E0B21; --panel:#171233; --panel2:#1E1840;
+  --text:#EFEBFF; --weak:#9B93C4;
+  --foil:linear-gradient(115deg,#43E8D8,#8B5CFF 38%,#FF5CA8 68%,#FFC15E);
+  --cyan:#43E8D8; --line:rgba(155,147,196,.22);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Noto Sans SC',sans-serif; overflow-x:hidden;
+}
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(560px 420px at 12% -8%, rgba(139,92,255,.16), transparent 70%),
+    radial-gradient(640px 460px at 88% 108%, rgba(67,232,216,.10), transparent 70%),
+    radial-gradient(520px 380px at 55% 50%, rgba(255,92,168,.06), transparent 70%);
+}
+body::after{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.5;
+  background:
+    linear-gradient(rgba(155,147,196,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(155,147,196,.05) 1px, transparent 1px);
+  background-size:44px 44px;
+}
+.wrap{position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:28px 24px 60px}
+header{display:flex; align-items:baseline; gap:16px; margin-bottom:26px; flex-wrap:wrap}
+header .back{color:var(--weak); text-decoration:none; font-size:13px; letter-spacing:.08em}
+header .back:hover{color:var(--cyan)}
+h1{font-family:'Unbounded',sans-serif; font-size:24px; font-weight:600; letter-spacing:.04em}
+h1 em{font-style:normal; background:var(--foil); -webkit-background-clip:text; background-clip:text; color:transparent}
+.badge{
+  font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--weak);
+  border:1px solid var(--line); border-radius:999px; padding:3px 10px; letter-spacing:.1em;
+  white-space:nowrap;
+}
+main{display:grid; grid-template-columns:352px 1fr; gap:28px; align-items:start}
+@media (max-width:900px){
+  main{grid-template-columns:1fr; gap:18px}
+  .stage{order:-1; padding:14px 0 4px}   /* 窄屏：预览在上，操作在下 */
+  .card{width:min(340px, 86vw)}
+}
+.panel{display:flex; flex-direction:column; gap:14px}
+.card-p{
+  background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px;
+}
+.card-p h2{
+  font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:400;
+  letter-spacing:.22em; color:var(--weak); margin-bottom:12px;
+}
+h2 .badge-inline{
+  float:right; font-weight:400; font-size:10px; letter-spacing:.08em; color:var(--cyan); opacity:.85;
+}
+.preset-group{margin-bottom:14px}
+.preset-group:last-child{margin-bottom:0}
+.preset-group .glabel{
+  font-size:11px; color:var(--weak); letter-spacing:.14em; margin-bottom:6px;
+  font-family:'JetBrains Mono',monospace;
+}
+.thumb-row{display:grid; grid-template-columns:repeat(5,1fr); gap:8px}
+.thumb{
+  position:relative; aspect-ratio:2/3; border-radius:8px; overflow:hidden;
+  border:1px solid var(--line); cursor:pointer; background:var(--panel2);
+  transition:transform .15s, border-color .15s;
+}
+.thumb:hover{transform:translateY(-2px); border-color:var(--cyan)}
+.thumb.on{border-color:var(--cyan); box-shadow:0 0 0 1px rgba(67,232,216,.35)}
+.thumb img{width:100%; height:100%; object-fit:cover; display:block}
+.thumb .tname{
+  position:absolute; left:2px; right:2px; bottom:0; font-size:9px; text-align:center;
+  padding:2px 0; background:rgba(14,11,33,.78); color:var(--weak); letter-spacing:.04em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.thumb.plus{
+  display:flex; align-items:center; justify-content:center;
+  border-style:dashed; border-color:rgba(155,147,196,.45); background:transparent;
+}
+.thumb.plus::before{
+  content:"+"; font-size:24px; font-weight:400; color:var(--weak); line-height:1;
+  transition:color .15s, transform .15s;
+}
+.thumb.plus:hover{border-color:var(--cyan)}
+.thumb.plus:hover::before{color:var(--cyan); transform:scale(1.15)}
+.actions{display:flex; gap:10px}
+/* 微调面板行：label / 滑杆 / 数值 三栏对齐 */
+.row{
+  display:grid; grid-template-columns:60px 1fr 44px; gap:10px;
+  align-items:center; margin-bottom:10px;
+}
+.row:last-child{margin-bottom:0}
+.row label{font-size:12px; color:var(--weak); white-space:nowrap}
+.row input[type="range"]{
+  width:100%; height:18px; margin:0; accent-color:var(--cyan); cursor:pointer;
+}
+.row output{
+  font-family:'JetBrains Mono',monospace; font-size:11px; text-align:right;
+  color:var(--text); font-variant-numeric:tabular-nums; opacity:.9;
+}
+button.act{
+  flex:1; padding:11px 0; border-radius:10px; border:1px solid var(--line);
+  background:var(--panel2); color:var(--text); font-size:13px; cursor:pointer;
+  font-family:'Noto Sans SC',sans-serif; transition:border-color .15s, transform .15s;
+}
+button.act:hover{border-color:var(--cyan); transform:translateY(-1px)}
+button.act.primary{
+  background:var(--foil); border:none; color:#0E0B21; font-weight:500;
+}
+.stage{display:flex; flex-direction:column; align-items:center; gap:18px; padding:30px 0}
+.scene{perspective:1200px; touch-action:none}
+/* 卡面固定 640:934（与介绍页活卡一致），高度再受视口约束，不再被素材包围盒带偏 */
+.card{
+  position:relative; width:min(400px, 86vw, calc(78svh / 1.4594)); aspect-ratio:640/934;
+  transform-style:preserve-3d;
+  transition:transform .25s ease-out; will-change:transform; cursor:grab;
+}
+.card:active{cursor:grabbing}
+@media (max-width:900px){.card{width:min(340px, 86vw)}}
+.inner{
+  position:relative; width:100%; height:100%; transform-style:preserve-3d;
+  transition:transform .65s cubic-bezier(.4,.1,.2,1);
+}
+.card.flipped .inner{transform:rotateY(180deg)}
+.face{
+  position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
+  border-radius:16px; overflow:hidden; background:var(--panel2);
+  box-shadow:0 24px 60px -18px rgba(0,0,0,.65), 0 0 0 1px rgba(155,147,196,.18);
+}
+/* 正面与介绍页活卡同款：辉光经 shader 1.6x overscan 溢出卡外，不能裁掉 */
+.face.front{overflow:visible; background:transparent}
+.face.front canvas{
+  position:absolute; width:160%; height:160%; max-width:none;
+  left:-30%; top:-30%; display:block; pointer-events:none;
+}
+.face.back{transform:rotateY(180deg)}
+.face.back img{width:100%; height:100%; object-fit:cover; display:block}
+.foot{
+  margin-top:40px; text-align:center; color:var(--weak); font-size:12px;
+  letter-spacing:.1em; opacity:.85;
+}
+.rise{opacity:0; transform:translateY(14px); animation:rise .6s forwards}
+.rise.d2{animation-delay:.1s}.rise.d3{animation-delay:.2s}
+@keyframes rise{to{opacity:1; transform:none}}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important; transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="rise">
+    <a class="back" href="../index.html">&larr; 卡册</a>
+    <h1>PLAY<em>GROUND</em></h1>
+    <span class="badge">M1 · 自带素材 · 实时合成</span>
+  </header>
+  <main>
+    <aside class="panel rise d2">
+      <section class="card-p">
+        <h2>01 · 素材 <span class="badge-inline">点 + 上传自定义</span></h2>
+        <div class="preset-group">
+          <div class="glabel">背景</div>
+          <div class="thumb-row" id="rowBg"></div>
+        </div>
+        <div class="preset-group">
+          <div class="glabel">角色</div>
+          <div class="thumb-row" id="rowChar"></div>
+        </div>
+        <div class="preset-group">
+          <div class="glabel">卡框</div>
+          <div class="thumb-row" id="rowFrame"></div>
+        </div>
+        <div class="preset-group">
+          <div class="glabel">卡背</div>
+          <div class="thumb-row" id="rowBack"></div>
+        </div>
+        <input type="file" id="fileAny" accept="image/png,image/jpeg,image/webp" hidden>
+      </section>
+      <section class="card-p">
+        <h2>02 · 微调</h2>
+        <div class="row"><label>角色缩放</label><input type="range" id="sCharScale" min="0.4" max="2.2" step="0.01" value="1"><output>1.00</output></div>
+        <div class="row"><label>角色横移</label><input type="range" id="sCharX" min="-60" max="60" step="1" value="0"><output>0</output></div>
+        <div class="row"><label>角色纵移</label><input type="range" id="sCharY" min="-60" max="60" step="1" value="0"><output>0</output></div>
+        <div class="row"><label>背景缩放</label><input type="range" id="sBgScale" min="1" max="2" step="0.01" value="1"><output>1.00</output></div>
+        <div class="row"><label>全息强度</label><input type="range" id="sFoil" min="0" max="1" step="0.01" value="0.55"><output>0.55</output></div>
+      </section>
+      <section class="card-p actions">
+        <button class="act primary" id="btnFlip">翻面</button>
+        <button class="act" id="btnReset">重置微调</button>
+      </section>
+    </aside>
+    <section class="stage rise d3">
+      <div class="scene" id="scene">
+        <div class="card" id="card">
+          <div class="inner">
+            <div class="face front"><canvas id="gl"></canvas></div>
+            <div class="face back"><img id="imgBack" alt="卡背"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="foot">所有数据仅在你的浏览器本地处理 · 不会上传到任何服务器</footer>
+</div>
+<script src="renderer.js"></script>
+<script src="frames/frames.js"></script>
+<script src="presets/presets.js"></script>
+<script src="playground.js"></script>
+</body>
+</html>

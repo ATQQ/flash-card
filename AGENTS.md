@@ -9,6 +9,12 @@
 flash-card-demos/
 ├── index.html                  # 首页（纯静态，零依赖、零构建）
 ├── AGENTS.md                   # 本文档
+├── docs/playground-prd.md      # PlayGround PRD（v0.2 已对齐）
+├── playground/                 # 闪卡工作台（用户自带素材，M1 已上线）
+│   ├── index.html              # 上传背景/角色 + 预制卡框 + CSS 分层预览
+│   ├── playground.js           # 上传压缩/层微调/视差/翻面
+│   ├── frames/                 # 卡框/卡背管理目录，新增见 frames/README.md
+│   └── presets/                # 预制背景/角色库，新增见 presets.js 头注释
 ├── SKILLS/holo-card-lite/      # 本项目 fork 的 Holo Card SKILL（默认外部引用图片）
 └── holo-card/                  # 按工具/系列分组
     ├── metalgreymon/           # 一张卡一个目录，英文小写命名

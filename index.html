@@ -211,6 +211,10 @@
     transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .big-card.flipped { transform: rotateY(180deg); }
+  /* 命中测试不感知 backface-visibility：翻面后让正面停收事件，链接才能点；
+     未翻面时背面也停收，避免点「翻面」误触背面的链接 */
+  .big-card.flipped .face.front { pointer-events: none; }
+  .big-card:not(.flipped) .face.back { pointer-events: none; }
   .big-card .face {
     position: absolute;
     inset: 0;
@@ -394,6 +398,8 @@
     transform: translateY(-2px);
     filter: brightness(1.25) drop-shadow(0 12px 22px rgba(139, 92, 255, 0.35));
   }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  a.shuffle-btn { text-decoration: none; }
   .shuffle-btn:active { transform: translateY(0); filter: brightness(1.1); }
 
   /* ---------- Demo 卡册 ---------- */
@@ -479,6 +485,28 @@
   @media (max-width: 620px) {
     .grid { grid-template-columns: repeat(2, 1fr); }
   }
+  /* ---------- 收录架标题 ---------- */
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+  .section-head h2 {
+    margin: 0;
+    font-family: "ZCOOL QingKe HuangYou", sans-serif;
+    font-weight: 400;
+    font-size: 26px;
+    letter-spacing: 0.06em;
+    color: var(--text);
+  }
+  .sub {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+  }
+
   /* ---------- 页脚 ---------- */
   footer {
     border-top: 1px solid var(--line);
@@ -564,13 +592,14 @@
         </div>
         <div class="face back">
           <div class="card-topline"><span id="hc-no">NO.000</span><span id="hc-en">HOLO CARD</span></div>
-          <p class="a">一张<em>四层拆解</em>的全息卡：<br />角色、场景、卡框、结构线，<br />在 Canvas 上按视差深度重新装配。<br /><br />拖动它，光会贴着轮廓流过去。</p>
+          <p class="a">一张<em>四层拆解</em>的全息卡：<br />背景、角色、卡框、结构线。<br />这里是它的静态剪影，<br />活的在介绍页里——从下方进去，<br />拖一拖，光会贴着轮廓流过去。</p>
           <div class="card-bottomline">
             <a id="hc-link" class="flip-hint" href="#" style="color:var(--amber); text-decoration:none">了解这张卡 →</a>
             <span>A</span>
           </div>
         </div>
       </div>
+      <div class="hero-actions">
       <button class="shuffle-btn" id="hero-shuffle" type="button" aria-label="随机换一张全息闪卡">
         <svg viewBox="0 0 24 24" fill="none" stroke="url(#foil-stroke)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <defs>
@@ -588,6 +617,15 @@
         </svg>
         <span>随机</span>
       </button>
+      <a class="shuffle-btn" href="./playground/" aria-label="进入 PlayGround 闪卡工作台">
+        <svg viewBox="0 0 24 24" fill="none" stroke="url(#foil-stroke)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z" />
+          <path d="M19 3v4" />
+          <path d="M17 5h4" />
+        </svg>
+        <span>PLAYGROUND</span>
+      </a>
+      </div>
     </div>
   </section>
 
