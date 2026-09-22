@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>魔术师的配合 · 3D 全息闪卡 — 闪卡实验场</title>
+<meta name="description" content="用 Blender 把黑魔术师与黑魔术少女的插画拆成四层平面，装配成可旋转的 3D 全息闪卡。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=ZCOOL+QingKe+HuangYou&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0E0B21;
+    --surface: #171233;
+    --surface-2: #1E1840;
+    --line: rgba(255, 255, 255, 0.09);
+    --text: #EFEBFF;
+    --muted: #9B93C4;
+    --cyan: #43E8D8;
+    --violet: #8B5CFF;
+    --pink: #FF5CA8;
+    --amber: #FFC15E;
+    --foil: linear-gradient(115deg, #43E8D8 0%, #8B5CFF 34%, #FF5CA8 66%, #FFC15E 100%);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Noto Sans SC", sans-serif;
+    line-height: 1.7;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection { background: var(--violet); color: #fff; }
+
+  .aurora {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(46rem 30rem at 82% -6%, rgba(139, 92, 255, 0.22), transparent 62%),
+      radial-gradient(38rem 26rem at -10% 30%, rgba(67, 232, 216, 0.10), transparent 60%),
+      radial-gradient(40rem 30rem at 60% 108%, rgba(255, 92, 168, 0.12), transparent 62%);
+  }
+  .aurora::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(70rem 46rem at 50% 0%, #000 30%, transparent 78%);
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+
+  a { color: inherit; }
+  :is(a, button):focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 8px; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 30px 0 0;
+  }
+  .crumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+  .crumb:hover { color: var(--cyan); }
+  .crumb::before { content: "←"; }
+  .demo-badge {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--amber);
+    border: 1px solid rgba(255, 193, 94, 0.4);
+    border-radius: 999px;
+    padding: 8px 16px;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero { padding: 84px 0 40px; text-align: center; }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: "Unbounded", sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 22px;
+  }
+  .eyebrow::before, .eyebrow::after { content: ""; width: 26px; height: 1px; background: var(--cyan); }
+
+  h1 {
+    font-family: "ZCOOL QingKe HuangYou", sans-serif;
+    font-weight: 400;
+    font-size: clamp(38px, 6vw, 68px);
+    line-height: 1.2;
+    letter-spacing: 0.03em;
+  }
+  h1 .foil-text {
+    background: var(--foil);
+    background-size: 220% 220%;
+    animation: foil-drift 8s ease-in-out infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero p.lead {
+    margin: 22px auto 0;
+    max-width: 56ch;
+    color: var(--muted);
+    font-size: 16.5px;
+  }
+
+  /* ---------- 实机预览 ---------- */
+  .stage {
+    margin: 56px auto 0;
+    position: relative;
+    max-width: 880px;
+    border-radius: 24px;
+    padding: 1.5px;
+    background: var(--foil);
+    background-size: 220% 220%;
+    animation: foil-drift 8s ease-in-out infinite;
+  }
+  .stage-inner {
+    border-radius: 22.5px;
+    overflow: hidden;
+    background: #101113;
+    position: relative;
+  }
+  .stage-inner iframe {
+    display: block;
+    width: 100%;
+    height: min(68vh, 620px);
+    border: 0;
+  }
+  .stage-note {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+  }
+  .stage-note .hint {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    padding: 13px 26px;
+    border-radius: 999px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-foil {
+    background: var(--foil);
+    background-size: 200% 200%;
+    animation: foil-drift 8s ease-in-out infinite;
+    color: #14092b;
+  }
+  .btn-ghost {
+    border: 1px solid var(--line);
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .btn-ghost:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  @keyframes foil-drift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* ---------- 通用 section ---------- */
+  section { padding: 84px 0 0; }
+  .sec-head { margin-bottom: 40px; }
+  .sec-head .num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.24em;
+    color: var(--pink);
+    display: block;
+    margin-bottom: 10px;
+  }
+  .sec-head h2 {
+    font-family: "ZCOOL QingKe HuangYou", sans-serif;
+    font-weight: 400;
+    font-size: clamp(26px, 3.4vw, 38px);
+    letter-spacing: 0.04em;
+  }
+
+  /* ---------- 生成方式 ---------- */
+  .recipe {
+    display: grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 18px;
+  }
+  .recipe-box {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 28px;
+  }
+  .recipe-box .r-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: var(--cyan);
+    display: block;
+    margin-bottom: 14px;
+  }
+  .recipe-box h3 {
+    font-family: "ZCOOL QingKe HuangYou", sans-serif;
+    font-weight: 400;
+    font-size: 21px;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+  }
+  .recipe-box p { font-size: 13.5px; color: var(--muted); line-height: 1.8; }
+  .recipe-box .hl { color: var(--cyan); }
+  .recipe-box a {
+    color: var(--cyan);
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(67, 232, 216, 0.5);
+  }
+  .recipe-box a:hover { border-bottom-style: solid; }
+
+  .prompt-box .r-label { color: var(--pink); }
+  .prompt-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: start;
+  }
+  .ref-fig {
+    width: 128px;
+    text-decoration: none;
+    display: block;
+  }
+  .ref-fig img {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    display: block;
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .ref-fig:hover img { transform: translateY(-4px); border-color: var(--pink); }
+  .ref-fig span {
+    display: block;
+    margin-top: 8px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+  @media (max-width: 620px) {
+    .prompt-row { grid-template-columns: 1fr; }
+    .ref-fig { width: 108px; }
+  }
+  .prompt-text {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13.5px;
+    line-height: 2;
+    color: var(--text);
+    background: rgba(255, 92, 168, 0.06);
+    border: 1px dashed rgba(255, 92, 168, 0.35);
+    border-radius: 12px;
+    padding: 18px 20px;
+    margin: 4px 0 14px;
+  }
+  .prompt-text::before { content: "❝ "; color: var(--pink); }
+  .prompt-text::after { content: " ❞"; color: var(--pink); }
+  .prompt-box .p-note { font-size: 12px; color: var(--muted); }
+
+  @media (max-width: 960px) {
+    .recipe { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- 工序 ---------- */
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 24px 22px;
+  }
+  .step .s-num {
+    font-family: "Unbounded", sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--cyan);
+    display: block;
+    margin-bottom: 14px;
+  }
+  .step h3 {
+    font-family: "ZCOOL QingKe HuangYou", sans-serif;
+    font-weight: 400;
+    font-size: 19px;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .step p { font-size: 13.5px; color: var(--muted); line-height: 1.8; }
+
+  /* ---------- 拆层图 ---------- */
+  .layers { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+  .layer { text-decoration: none; }
+  .layer figure {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    aspect-ratio: 2 / 3;
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s;
+  }
+  .layer:hover figure { transform: translateY(-6px); border-color: var(--violet); }
+  .layer img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .layer figcaption { padding: 12px 4px 0; }
+  .layer .l-name {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--cyan);
+    display: block;
+  }
+  .layer .l-desc { font-size: 12.5px; color: var(--muted); line-height: 1.6; display: block; margin-top: 4px; }
+
+  /* ---------- 灯箱预览 ---------- */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: grid;
+    place-items: center;
+    padding: 4vmin;
+    background: rgba(10, 8, 24, 0.86);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s, visibility 0.25s;
+  }
+  .lightbox.open { opacity: 1; visibility: visible; }
+  .lightbox img {
+    max-width: min(88vw, 720px);
+    max-height: 84vh;
+    border-radius: 12px;
+    border: 1.5px solid rgba(139, 92, 255, 0.55);
+    box-shadow: 0 40px 90px -20px rgba(0, 0, 0, 0.8);
+    transform: scale(0.96);
+    transition: transform 0.25s;
+  }
+  .lightbox.open img { transform: scale(1); }
+  .lightbox .lb-caption {
+    position: absolute;
+    bottom: 3.5vmin;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .lightbox .lb-close {
+    position: absolute;
+    top: 3vmin;
+    right: 3.5vmin;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+    font-size: 17px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .lightbox .lb-close:hover { border-color: var(--pink); color: var(--pink); }
+
+  footer {
+    margin-top: 90px;
+    border-top: 1px solid var(--line);
+    padding: 34px 0 44px;
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+
+  .rise { opacity: 0; transform: translateY(26px); animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  .d1 { animation-delay: 0.05s; } .d2 { animation-delay: 0.15s; } .d3 { animation-delay: 0.3s; }
+
+  @media (max-width: 960px) {
+    .steps { grid-template-columns: repeat(2, 1fr); }
+    .layers { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 620px) {
+    .steps { grid-template-columns: 1fr; }
+    .layers { grid-template-columns: repeat(2, 1fr); }
+    footer { flex-direction: column; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    html { scroll-behavior: auto; }
+    .rise { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"></div>
+
+<div class="wrap">
+  <header class="rise d1">
+    <a class="crumb" href="../../index.html">返回 闪卡实验场</a>
+    <span class="demo-badge">DEMO Nº004 · LIVE</span>
+  </header>
+
+  <section class="hero">
+    <p class="eyebrow rise d1">RuiC Card · Magician Combo</p>
+    <h1 class="rise d2">魔术师的配合<br /><span class="foil-text">3D 全息闪卡</span></h1>
+    <p class="lead rise d3">
+      实验场第一张走 3D 管线的卡：黑魔术师与黑魔术少女双阵同时展开，
+      插画被拆成主体、场景、卡框文字、结构线四层平面，在 Blender 里立起来、拉开景深、
+      渲染成实体卡面，再回到浏览器里自由旋转与调光。
+    </p>
+
+    <div class="stage rise d3">
+      <div class="stage-inner">
+        <iframe src="./web/index.html" title="魔术师的配合 3D 全息闪卡 · 实机预览" loading="lazy"></iframe>
+      </div>
+    </div>
+    <div class="stage-note rise d3">
+      <span class="hint">▲ 卡片可以拖拽旋转 · 支持切换正面 / 背面与四种卡面质感</span>
+      <a class="btn btn-foil" href="./web/index.html" target="_blank" rel="noopener">全屏体验 →</a>
+    </div>
+  </section>
+
+  <section aria-labelledby="gen-title">
+    <div class="sec-head">
+      <span class="num">RECIPE</span>
+      <h2 id="gen-title">它怎么来的</h2>
+    </div>
+    <div class="recipe">
+      <div class="recipe-box">
+        <span class="r-label">GENERATOR</span>
+        <h3>技能 · RuiC Card Skill</h3>
+        <p>
+          整张卡由 <span class="hl">RuiC Card Skill</span> 生成与装配：
+          它把参考卡面拆成主体、场景、卡框文字、结构线四层平面，
+          在 <span class="hl">Blender 4.5 LTS</span> 里立成真实 3D 场景、按景深参数前后错开，
+          用 Cycles 渲染定帧，最后装配成浏览器里可交互的 <span class="hl">card.glb</span> 模型。
+          关键参数：主体 +0.4 在最前、场景 -0.25 退到底、全息箔 0.65；
+          装配记录保留在 <span class="hl">verification.json</span> 与 <span class="hl">card-config.json</span>。
+        </p>
+      </div>
+      <div class="recipe-box prompt-box">
+        <span class="r-label">PROMPT + REFERENCE</span>
+        <div class="prompt-row">
+          <div class="prompt-col">
+            <p class="prompt-text">/RuiC Card 给我做一张游戏王「魔术师的配合」的闪卡</p>
+            <p class="p-note">
+              一句话提示词，外加一张原版陷阱卡图（右侧）——
+              双炮构图、两位魔术师的站位与卡框版式都照着它来，
+              RuiC Card Skill 负责拆层、3D 装配与全息质感。
+            </p>
+          </div>
+          <a class="ref-fig lb" href="./14909.jpg" data-caption="REFERENCE — 原版陷阱卡图">
+            <img src="./14909.jpg" alt="参考图：游戏王原版魔术师的配合陷阱卡" loading="lazy" />
+            <span>REFERENCE · 点击看大图</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="make-title">
+    <div class="sec-head">
+      <span class="num">PROCESS</span>
+      <h2 id="make-title">一张卡的四道工序</h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="s-num">01</span>
+        <h3>拆层</h3>
+        <p>把完整卡面拆成主体、场景、卡框文字、结构线四个独立图层，主体层做 alpha 抠图（透明区约 53%）。</p>
+      </div>
+      <div class="step">
+        <span class="s-num">02</span>
+        <h3>装配</h3>
+        <p>在 Blender 里把每层立成平面，按景深参数前后错开：主体 +0.4 在最前，场景 -0.25 退到底。</p>
+      </div>
+      <div class="step">
+        <span class="s-num">03</span>
+        <h3>材质</h3>
+        <p>卡面配珠光、银箔、烫金、原画四种质感，全息箔强度可调，光会贴着炮管和法杖流动。</p>
+      </div>
+      <div class="step">
+        <span class="s-num">04</span>
+        <h3>渲染</h3>
+        <p>Cycles 渲染定帧确认效果，再装配成 glb 模型回到浏览器——旋转、翻面、景深全部实时可调。</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="layers-title">
+    <div class="sec-head">
+      <span class="num">LAYERS</span>
+      <h2 id="layers-title">拆开之后，每层长这样</h2>
+    </div>
+    <div class="layers">
+      <a class="layer lb" href="./source.png" data-caption="SOURCE — 渲染成品卡面">
+        <figure><img src="./source.png" alt="渲染成品：魔术师的配合卡面" loading="lazy" /></figure>
+        <figcaption><span class="l-name">SOURCE</span><span class="l-desc">渲染成品卡面</span></figcaption>
+      </a>
+      <a class="layer lb" href="./assets/subject.png" data-caption="SUBJECT — 主体 · 最近景">
+        <figure><img src="./assets/subject.png" alt="主体层：黑魔术师与黑魔术少女" loading="lazy" /></figure>
+        <figcaption><span class="l-name">SUBJECT</span><span class="l-desc">主体 · 最近景</span></figcaption>
+      </a>
+      <a class="layer lb" href="./assets/background.png" data-caption="BACKGROUND — 场景 · 最远景">
+        <figure><img src="./assets/background.png" alt="场景层：星海与双炮背景" loading="lazy" /></figure>
+        <figcaption><span class="l-name">BACKGROUND</span><span class="l-desc">场景 · 最远景</span></figcaption>
+      </a>
+      <a class="layer lb" href="./assets/text.png" data-caption="TEXT — 卡框与文字">
+        <figure><img src="./assets/text.png" alt="文字层：卡框、标题与信息栏" loading="lazy" /></figure>
+        <figcaption><span class="l-name">TEXT</span><span class="l-desc">卡框与文字</span></figcaption>
+      </a>
+      <a class="layer lb" href="./assets/lineart.png" data-caption="LINEART — 深度结构线">
+        <figure><img src="./assets/lineart.png" alt="结构线层：主体轮廓线" loading="lazy" /></figure>
+        <figcaption><span class="l-name">LINEART</span><span class="l-desc">深度结构线</span></figcaption>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    <span>FLASH CARD DEMOS — DEMO Nº004</span>
+    <span>卡 = 知识的最小封装单位</span>
+  </footer>
+</div>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="图片预览">
+  <button class="lb-close" id="lb-close" aria-label="关闭预览">✕</button>
+  <img id="lb-img" src="" alt="" />
+  <span class="lb-caption" id="lb-cap"></span>
+</div>
+
+<script>
+  (() => {
+    const lb = document.getElementById("lightbox");
+    const lbImg = document.getElementById("lb-img");
+    const lbCap = document.getElementById("lb-cap");
+    const lbClose = document.getElementById("lb-close");
+    let lastFocus = null;
+
+    function openLb(a) {
+      lastFocus = a;
+      lbImg.src = a.getAttribute("href");
+      lbImg.alt = a.querySelector("img") ? a.querySelector("img").alt : "";
+      lbCap.textContent = a.dataset.caption || "";
+      lb.classList.add("open");
+      document.body.style.overflow = "hidden";
+      lbClose.focus();
+    }
+    function closeLb() {
+      lb.classList.remove("open");
+      document.body.style.overflow = "";
+      if (lastFocus) lastFocus.focus();
+    }
+
+    document.querySelectorAll("a.lb").forEach((a) => {
+      a.addEventListener("click", (e) => { e.preventDefault(); openLb(a); });
+    });
+    lb.addEventListener("click", (e) => { if (e.target === lb || e.target === lbImg) closeLb(); });
+    lbClose.addEventListener("click", closeLb);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && lb.classList.contains("open")) closeLb();
+    });
+  })();
+</script>
+</body>
+</html>
