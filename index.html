@@ -398,14 +398,13 @@
 
   /* ---------- Demo 卡册 ---------- */
   .grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
     gap: 30px 26px;
     padding-bottom: 110px;
   }
   .mini-card {
-    width: 208px;
+    width: 100%;
     text-decoration: none;
     display: block;
   }
@@ -478,7 +477,7 @@
   }
 
   @media (max-width: 620px) {
-    .mini-card { width: calc(50% - 13px); }
+    .grid { grid-template-columns: repeat(2, 1fr); }
   }
   /* ---------- 页脚 ---------- */
   footer {
