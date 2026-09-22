@@ -3,3 +3,5 @@ holo-card/*/job/card.zip
 
 # 备份文件
 *.bak
+.workbuddy
+.DS_Store

@@ -13,12 +13,13 @@
 
 /* Oversized transparent foreground surface; background clipping is done in the shader. */
 .front{overflow:visible;background:transparent}.front canvas{position:absolute;width:160%;height:160%;max-width:none;left:-30%;top:-30%;border-radius:0;pointer-events:none}
-</style></head><body><main class="room"><button id="immersive" class="immersive-toggle" type="button" aria-label="Enter immersive mode" aria-pressed="false" title="Immersive mode"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m4 4 16 16"/></svg></button><div class="stage"><div class="card" tabindex="0" role="button" aria-label="Click to flip, drag to rotate, or use arrow keys"><div class="face front"><canvas></canvas></div><div class="face back"><img alt="Card back" draggable="false"></div></div></div><aside class="controls" aria-label="Card effects"><label for="depth">Depth</label><div class="depth-track"><input id="depth" type="range" min="-3" max="3" step="0.05" value="0"><span class="depth-ticks" aria-hidden="true"><span></span><span>0</span><span></span></span></div><output for="depth">0.00×</output><label for="brightness">Contour glow</label><input id="brightness" type="range" min="0" max="3" step="0.05" value="0.15"><output for="brightness">0.15×</output><div class="interaction"><button id="motion" type="button" aria-pressed="false">Enable motion</button><button id="mobile" type="button" hidden>Phone preview</button><button id="reset" type="button">Recenter</button></div><p id="motion-hint" aria-live="polite">Drag to rotate · Tap to flip</p></aside><dialog id="mobile-dialog"><form method="dialog"><button aria-label="Close" class="close">×</button></form><h2>Open on your phone</h2><img id="mobile-qr" alt="Scan to preview this card on your phone"><a id="mobile-link" target="_blank" rel="noopener">Open preview</a><p>Each device has its own controls.</p></dialog><p class="status" role="status">Loading card…</p></main><script type="module">globalThis.HOLO_MANIFEST={"name": "Tailmon Holo Card", "width": 1050, "height": 1600, "assets": {"character": "assets/character.png", "background": "assets/background.png", "ui": "assets/ui.png", "structure": "assets/structure.png"}, "back": "back.png"};
+</style></head><body><main class="room"><button id="immersive" class="immersive-toggle" type="button" aria-label="Enter immersive mode" aria-pressed="false" title="Immersive mode"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m4 4 16 16"/></svg></button><div class="stage"><div class="card" tabindex="0" role="button" aria-label="Click to flip, drag to rotate, or use arrow keys"><div class="face front"><canvas></canvas></div><div class="face back"><img alt="Card back" draggable="false"></div></div></div><aside class="controls" aria-label="Card effects"><label for="depth">Depth</label><div class="depth-track"><input id="depth" type="range" min="-3" max="3" step="0.05" value="0"><span class="depth-ticks" aria-hidden="true"><span></span><span>0</span><span></span></span></div><output for="depth">0.00×</output><label for="brightness">Contour glow</label><input id="brightness" type="range" min="0" max="3" step="0.05" value="0.15"><output for="brightness">0.15×</output><div class="interaction"><button id="motion" type="button" aria-pressed="false">Enable motion</button><button id="mobile" type="button" hidden>Phone preview</button><button id="reset" type="button">Recenter</button></div><p id="motion-hint" aria-live="polite">Drag to rotate · Tap to flip</p></aside><dialog id="mobile-dialog"><form method="dialog"><button aria-label="Close" class="close">×</button></form><h2>Open on your phone</h2><img id="mobile-qr" alt="Scan to preview this card on your phone"><a id="mobile-link" target="_blank" rel="noopener">Open preview</a><p>Each device has its own controls.</p></dialog><p class="status" role="status">Loading card…</p></main><script type="module">globalThis.HOLO_MANIFEST={"name": "Dark Magician Girl", "width": 640, "height": 934, "assets": {"character": "assets/character.png", "background": "assets/background.png", "ui": "assets/ui.png", "structure": "assets/structure.png"}, "back": "assets/back.png"};
+globalThis.HOLO_CARD_RECT=[0.50313,0.50589,0.46875,0.47805];
 // Snapshot of the shared HDR card renderer; input textures are materialized RGBA layers.
 // Lightweight, view-dependent layered card. No 3D engine or video textures.
 const vertex = `attribute vec2 position; varying vec2 uv; void main(){uv=position*.5+.5;gl_Position=vec4(position,0.,1.);}`;
 const fragment = `precision highp float;
-varying vec2 uv; uniform sampler2D art,bg,uiTex,bloomNear,bloomWide,structureTex; uniform float extracted, cardAspect; uniform vec2 view; uniform float depth, contourBrightness, power, glowPass, pixelWidth;
+varying vec2 uv; uniform sampler2D art,bg,uiTex,bloomNear,bloomWide,structureTex; uniform vec4 cardRect; uniform float extracted, cardAspect; uniform vec2 view; uniform float depth, contourBrightness, power, glowPass, pixelWidth;
 vec4 encodeHDR(vec3 c){float m=clamp(ceil(max(max(c.r,c.g),c.b)/64.*255.)/255.,1./255.,1.);return vec4(c/(64.*m),m);}
 vec3 decodeHDR(vec4 c){return c.rgb*c.a*64.;}
 vec3 hsv(vec3 c){vec4 K=vec4(0.,-1./3.,2./3.,-1.);vec4 p=mix(vec4(c.bg,K.wz),vec4(c.gb,K.xy),step(c.b,c.g));vec4 q=mix(vec4(p.xyw,c.r),vec4(c.r,p.yzx),step(p.x,c.r));float d=q.x-min(q.w,q.y);return vec3(abs(q.z+(q.w-q.y)/(6.*d+.00001)),d/(q.x+.00001),q.x);}
@@ -29,7 +30,7 @@ float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float band(vec2 p){float f=p.x*.65+p.y*.4+view.x*1.9+view.y*.85;return pow(max(0.,1.-abs(fract(f+.16)-.5)*2.),3.);}
 void main(){
  vec2 p=(uv-.5)*1.6+.5;vec2 u=p;
- vec2 edge=abs((p-vec2(.49667,.49375))*vec2(1.,cardAspect))-(vec2(.43095,cardAspect*.42312)-vec2(.045));
+ vec2 edge=abs((p-cardRect.xy)*vec2(1.,cardAspect))-(vec2(cardRect.z,cardRect.w*cardAspect)-vec2(.045));
  float edgeDistance=length(max(edge,0.))+min(max(edge.x,edge.y),0.)-.045;
  float cardMask=1.-smoothstep(-pixelWidth,pixelWidth,edgeDistance);
  float foregroundMask=depth>0.?1.:cardMask;vec2 a=(p-.5)*1.25+.5+view*.40;vec2 b=(p-.5)*.5+.5-view*.25;
@@ -42,7 +43,7 @@ void main(){
  vec3 ui=texture2D(uiTex,u).rgb;vec3 uh=hsv(ui);float um=max(smoothstep(.105,.23,uh.y),1.-smoothstep(.35,.62,uh.z));
  if(extracted>.5)um=texture2D(uiTex,u).a*step(0.,u.x)*step(u.x,1.)*step(0.,u.y)*step(u.y,1.);
  // The text/frame plate has its own rounded boundary, moving with its UVs.
- vec2 uiEdge=abs((u-vec2(.49667,.49375))*vec2(1.,cardAspect))-(vec2(.43095,cardAspect*.42312)-vec2(.045));
+ vec2 uiEdge=abs((u-cardRect.xy)*vec2(1.,cardAspect))-(vec2(cardRect.z,cardRect.w*cardAspect)-vec2(.045));
  float uiDistance=length(max(uiEdge,0.))+min(max(uiEdge.x,uiEdge.y),0.)-.045;
  float uiMask=1.-smoothstep(-pixelWidth,pixelWidth,uiDistance);
  um*=uiMask*foregroundMask;
@@ -65,7 +66,7 @@ void main(){
  base/=max(finalAlpha,.0001);
  // Concentric rounded border in card-width units, matching the CSS outer radius.
  // Outer radius .045, uniform inset .015, inner radius .030.
- vec2 corner=abs((p-vec2(.49667,.49375))*vec2(1.,cardAspect))-(vec2(0.41595,cardAspect*0.40812)-vec2(.030));
+ vec2 corner=abs((p-cardRect.xy)*vec2(1.,cardAspect))-(vec2(cardRect.z-.015,cardRect.w*cardAspect-.015)-vec2(.030));
  float distanceToInner=length(max(corner,0.))+min(max(corner.x,corner.y),0.)-.030;
  float inside=1.-smoothstep(-pixelWidth,pixelWidth,distanceToInner);
  float rim=(1.-inside)*(1.-extracted);
@@ -212,6 +213,10 @@ async function createCardRenderer(canvas, assets) {
   gl.uniform1f(gl.getUniformLocation(scene, 'extracted'), assets ? 1 : 0);
   gl.uniform1i(gl.getUniformLocation(scene, 'structureTex'), 5);
   gl.uniform1f(gl.getUniformLocation(scene, 'pixelWidth'), 1 / canvas.width);
+  const rect = Array.isArray(globalThis.HOLO_CARD_RECT) && globalThis.HOLO_CARD_RECT.length === 4
+    ? globalThis.HOLO_CARD_RECT
+    : [0.5, 0.5, 0.5, 0.5];
+  gl.uniform4f(gl.getUniformLocation(scene, 'cardRect'), rect[0], rect[1], rect[2], rect[3]);
   ['art', 'bg', 'uiTex', 'bloomNear', 'bloomWide'].forEach((name, i) =>
     gl.uniform1i(gl.getUniformLocation(scene, name), i),
   );

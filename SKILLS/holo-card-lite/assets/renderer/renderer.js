@@ -2,7 +2,7 @@
 // Lightweight, view-dependent layered card. No 3D engine or video textures.
 const vertex = `attribute vec2 position; varying vec2 uv; void main(){uv=position*.5+.5;gl_Position=vec4(position,0.,1.);}`;
 const fragment = `precision highp float;
-varying vec2 uv; uniform sampler2D art,bg,uiTex,bloomNear,bloomWide,structureTex; uniform float extracted, cardAspect; uniform vec2 view; uniform float depth, contourBrightness, power, glowPass, pixelWidth;
+varying vec2 uv; uniform sampler2D art,bg,uiTex,bloomNear,bloomWide,structureTex; uniform vec4 cardRect; uniform float extracted, cardAspect; uniform vec2 view; uniform float depth, contourBrightness, power, glowPass, pixelWidth;
 vec4 encodeHDR(vec3 c){float m=clamp(ceil(max(max(c.r,c.g),c.b)/64.*255.)/255.,1./255.,1.);return vec4(c/(64.*m),m);}
 vec3 decodeHDR(vec4 c){return c.rgb*c.a*64.;}
 vec3 hsv(vec3 c){vec4 K=vec4(0.,-1./3.,2./3.,-1.);vec4 p=mix(vec4(c.bg,K.wz),vec4(c.gb,K.xy),step(c.b,c.g));vec4 q=mix(vec4(p.xyw,c.r),vec4(c.r,p.yzx),step(p.x,c.r));float d=q.x-min(q.w,q.y);return vec3(abs(q.z+(q.w-q.y)/(6.*d+.00001)),d/(q.x+.00001),q.x);}
@@ -13,7 +13,7 @@ float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float band(vec2 p){float f=p.x*.65+p.y*.4+view.x*1.9+view.y*.85;return pow(max(0.,1.-abs(fract(f+.16)-.5)*2.),3.);}
 void main(){
  vec2 p=(uv-.5)*1.6+.5;vec2 u=p;
- vec2 edge=abs((p-.5)*vec2(1.,cardAspect))-(vec2(.5,cardAspect*.5)-vec2(.045));
+ vec2 edge=abs((p-cardRect.xy)*vec2(1.,cardAspect))-(vec2(cardRect.z,cardRect.w*cardAspect)-vec2(.045));
  float edgeDistance=length(max(edge,0.))+min(max(edge.x,edge.y),0.)-.045;
  float cardMask=1.-smoothstep(-pixelWidth,pixelWidth,edgeDistance);
  float foregroundMask=depth>0.?1.:cardMask;vec2 a=(p-.5)*1.25+.5+view*.40;vec2 b=(p-.5)*.5+.5-view*.25;
@@ -26,7 +26,7 @@ void main(){
  vec3 ui=texture2D(uiTex,u).rgb;vec3 uh=hsv(ui);float um=max(smoothstep(.105,.23,uh.y),1.-smoothstep(.35,.62,uh.z));
  if(extracted>.5)um=texture2D(uiTex,u).a*step(0.,u.x)*step(u.x,1.)*step(0.,u.y)*step(u.y,1.);
  // The text/frame plate has its own rounded boundary, moving with its UVs.
- vec2 uiEdge=abs((u-.5)*vec2(1.,cardAspect))-(vec2(.5,cardAspect*.5)-vec2(.045));
+ vec2 uiEdge=abs((u-cardRect.xy)*vec2(1.,cardAspect))-(vec2(cardRect.z,cardRect.w*cardAspect)-vec2(.045));
  float uiDistance=length(max(uiEdge,0.))+min(max(uiEdge.x,uiEdge.y),0.)-.045;
  float uiMask=1.-smoothstep(-pixelWidth,pixelWidth,uiDistance);
  um*=uiMask*foregroundMask;
@@ -49,7 +49,7 @@ void main(){
  base/=max(finalAlpha,.0001);
  // Concentric rounded border in card-width units, matching the CSS outer radius.
  // Outer radius .045, uniform inset .015, inner radius .030.
- vec2 corner=abs((p-.5)*vec2(1.,cardAspect))-(vec2(.485,cardAspect*.5-.015)-vec2(.030));
+ vec2 corner=abs((p-cardRect.xy)*vec2(1.,cardAspect))-(vec2(cardRect.z-.015,cardRect.w*cardAspect-.015)-vec2(.030));
  float distanceToInner=length(max(corner,0.))+min(max(corner.x,corner.y),0.)-.030;
  float inside=1.-smoothstep(-pixelWidth,pixelWidth,distanceToInner);
  float rim=(1.-inside)*(1.-extracted);
@@ -196,6 +196,11 @@ export async function createCardRenderer(canvas, assets) {
   gl.uniform1f(gl.getUniformLocation(scene, 'extracted'), assets ? 1 : 0);
   gl.uniform1i(gl.getUniformLocation(scene, 'structureTex'), 5);
   gl.uniform1f(gl.getUniformLocation(scene, 'pixelWidth'), 1 / canvas.width);
+  const rect =
+    Array.isArray(globalThis.HOLO_CARD_RECT) && globalThis.HOLO_CARD_RECT.length === 4
+      ? globalThis.HOLO_CARD_RECT
+      : [0.5, 0.5, 0.5, 0.5];
+  gl.uniform4f(gl.getUniformLocation(scene, 'cardRect'), rect[0], rect[1], rect[2], rect[3]);
   ['art', 'bg', 'uiTex', 'bloomNear', 'bloomWide'].forEach((name, i) =>
     gl.uniform1i(gl.getUniformLocation(scene, name), i),
   );

@@ -1,0 +1,81 @@
+{
+  "version": 3,
+  "prompt_digest": "1c50e724eae148e57c605e625aac30a1870f620b0ae651f59551987ab58c0a89",
+  "layer_mode": "direct_rgba",
+  "execution": "codex_builtin_image_gen",
+  "name": "Dark Magician Girl",
+  "status": "completed",
+  "created_at": 1789985852991,
+  "source": {
+    "original": "original.png",
+    "sha256": "4c23c239db061653799e91e1c8195a004af6d9847c812226816771e203af02aa",
+    "normalized_sha256": "5439e57ac8c761ea1c00c5263d48332e33291d7bf92cbed8149d7019a3dccabf",
+    "width": 640,
+    "height": 934
+  },
+  "repairs": {
+    "background_inpainting": true,
+    "subject_text_cleanup": true
+  },
+  "completed_at": 1789986087690,
+  "warnings": [],
+  "quality_review": "not_automatically_verified",
+  "layers": {
+    "character": {
+      "status": "imported",
+      "error": null,
+      "raw": "raw/character.png",
+      "sha256": "62de1ff7f27d859dcea15362e1c596fa3ef49bf798ff6369cf2c766bd0896bef",
+      "format": "rgba",
+      "imported_at": 1789986009230,
+      "alpha_method": "independent_selection",
+      "alpha_inputs": {
+        "color": "alpha-inputs/character/1789986008001895000-color.png",
+        "color_sha256": "cad93a74d19d75b7350c8ffbe5e4245713b5ace50c74a1510b1b0a58895b2732",
+        "mask": "alpha-inputs/character/1789986008001895000-mask.png",
+        "mask_sha256": "c306c512aa93870b125d1ca0a7c90dc53777f3e6cf8a7250546b7e63c5f4e951"
+      },
+      "visual_review": "required: alignment, edge contamination, interior holes, text residue"
+    },
+    "background": {
+      "status": "imported",
+      "error": null,
+      "raw": "raw/background.jpg",
+      "sha256": "df535f1cf1bb6927fcc6b0ba1746d43d60beae6632c25ba244017b8fe3da2d7d",
+      "format": "rgba",
+      "imported_at": 1789985934910
+    },
+    "ui": {
+      "status": "imported",
+      "error": null,
+      "raw": "raw/ui.png",
+      "sha256": "b5e8818cc3da88542d8832db63528ecee295de5575f045de30f0f273f99c8401",
+      "format": "rgba",
+      "imported_at": 1789986014964,
+      "alpha_method": "independent_selection",
+      "alpha_inputs": {
+        "color": "alpha-inputs/ui/1789986013400876000-color.png",
+        "color_sha256": "8c6b39f3db1f8e3f69f5911d1f2e4987c85844ec06735c1945a879e8f8262474",
+        "mask": "alpha-inputs/ui/1789986013400876000-mask.png",
+        "mask_sha256": "57e15ba3bbecc36913f947c206d1ec5087dbffd5f438c373ae564868f9d0b80e"
+      },
+      "visual_review": "required: alignment, edge contamination, interior holes, text residue"
+    },
+    "structure": {
+      "status": "imported",
+      "error": null,
+      "raw": "raw/structure.png",
+      "sha256": "62acb298da254be6715ca4cc80c00cdede9f8b390a91cf423d5c22eb6123f137",
+      "format": "mask",
+      "imported_at": 1789986083335
+    }
+  },
+  "renderer": {
+    "emission": 40,
+    "rgbm_range": 64,
+    "bloom_scales": [
+      0.5,
+      0.25
+    ]
+  }
+}

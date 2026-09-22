@@ -552,6 +552,18 @@
           <span class="mini-tag">HOLO</span>
         </div>
       </a>
+
+      <a class="mini-card rise d3" href="./holo-card/darkmagiciangirl/index.html">
+        <div class="mini-frame">
+          <img src="./holo-card/darkmagiciangirl/source.png" alt="黑魔导女孩全息闪卡" loading="lazy" />
+          <span class="mini-sheen" aria-hidden="true"></span>
+        </div>
+        <div class="mini-label">
+          <span class="mini-no">NO.009</span>
+          <span class="mini-name">黑魔导女孩</span>
+          <span class="mini-tag">HOLO</span>
+        </div>
+      </a>
     </div>
   </section>
 
@@ -589,17 +601,40 @@
   const heroCards = [
     {
       no: "NO.007", name: "机械暴龙兽 · 全息卡", en: "METALGREYMON",
-      dir: "./holo-card/metalgreymon/job/assets", url: "./holo-card/metalgreymon/index.html"
+      dir: "./holo-card/metalgreymon/job/assets", url: "./holo-card/metalgreymon/index.html",
+      rect: [0.5, 0.5, 0.5, 0.5]
     },
     {
       no: "NO.008", name: "迪路兽 · 全息卡", en: "TAILMON",
-      dir: "./holo-card/tailmon/job/assets", url: "./holo-card/tailmon/index.html"
+      dir: "./holo-card/tailmon/job/assets", url: "./holo-card/tailmon/index.html",
+      rect: [0.49714, 0.49406, 0.43143, 0.42344]
+    },
+    {
+      no: "NO.009", name: "黑魔导女孩 · 全息卡", en: "DARK MAGICIAN GIRL",
+      dir: "./holo-card/darkmagiciangirl", url: "./holo-card/darkmagiciangirl/index.html",
+      rect: [0.50391, 0.50642, 0.46953, 0.47859]
     }
   ];
   const picked = heroCards[Math.floor(Math.random() * heroCards.length)];
   document.getElementById("hc-bg").src = picked.dir + "/background.png";
   document.getElementById("hc-ch").src = picked.dir + "/character.png";
   document.getElementById("hc-ui").src = picked.dir + "/ui.png";
+  // UI 板不透明区（归一化 [cx,cy,hx,hy]）：把透明边距仿射映射推出卡面，overflow:hidden 裁掉
+  const rect = picked.rect ?? [0.5, 0.5, 0.5, 0.5];
+  const sx = 1 / (rect[2] * 2), sy = 1 / (rect[3] * 2);
+  const fit = "translate(" + (-sx * (rect[0] - rect[2]) * 100).toFixed(3) + "%, " +
+    (-sy * (rect[1] - rect[3]) * 100).toFixed(3) + "%) scale(" + sx.toFixed(4) + ", " + sy.toFixed(4) + ")";
+  const layerFits = [
+    ["hc-bg", "translate(50%, 50%) scale(1.10) translate3d(calc(var(--px, 0) * 5px), calc(var(--py, 0) * 5px), 0) translate(-50%, -50%)"],
+    ["hc-ch", "translate(50%, 50%) scale(1.07) translate3d(calc(var(--px, 0) * -13px), calc(var(--py, 0) * -13px), 0) translate(-50%, -50%)"],
+    ["hc-ui", "translate(50%, 50%) scale(1.03) translate3d(calc(var(--px, 0) * 3px), calc(var(--py, 0) * 3px), 0) translate(-50%, -50%)"]
+  ];
+  for (const [id, par] of layerFits) {
+    const el = document.getElementById(id);
+    el.style.objectFit = "fill";
+    el.style.transformOrigin = "0 0";
+    el.style.transform = par + " " + fit;
+  }
   document.getElementById("hc-name").textContent = picked.name;
   document.getElementById("hc-no").textContent = picked.no;
   document.getElementById("hc-en").textContent = picked.en;

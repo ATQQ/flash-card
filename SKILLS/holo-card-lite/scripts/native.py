@@ -111,8 +111,10 @@ def html_document(job,state,inline=False):
         manifest['previewUrl']=state['preview_url']
         manifest['previewQr']=data_url(job/'mobile-qr.png') if inline else 'mobile-qr.png'
     data=json.dumps(manifest,ensure_ascii=True).replace('<','\\u003c')
+    rect=state.get('card_rect')
+    rect_script=('globalThis.HOLO_CARD_RECT='+json.dumps(rect)+';\n') if rect else ''
     renderer=(TEMPLATES/'renderer.js').read_text().replace('export async function createCardRenderer','async function createCardRenderer')
-    script='globalThis.HOLO_MANIFEST='+data+';\n'+renderer+'\nglobalThis.HOLO_CREATE_RENDERER=createCardRenderer;\n'+(TEMPLATES/'viewer.js').read_text()
+    script='globalThis.HOLO_MANIFEST='+data+';\n'+rect_script+renderer+'\nglobalThis.HOLO_CREATE_RENDERER=createCardRenderer;\n'+(TEMPLATES/'viewer.js').read_text()
     html=(TEMPLATES/'index.html').read_text()
     html=html.replace('<link rel="stylesheet" href="viewer.css?access=__ACCESS__">','<style>'+(TEMPLATES/'viewer.css').read_text()+'</style>')
     return html.replace('<script type="module" src="viewer.js?access=__ACCESS__"></script>','<script type="module">'+script+'</script>')
@@ -145,6 +147,21 @@ def assemble(job,preview_url=None,inline=False):
         layer=Image.new('RGBA',source.size,'white')
         layer.putalpha(alpha);layer.save(job/'assets'/f'{kind}.png')
         if not alpha.getbbox():warnings.append(kind.upper()+'_EMPTY_SELECTION')
+    # The renderer ignores the background plate's alpha and lays it under the whole card,
+    # so clip the composite card rectangle to the UI plate's opaque bounding box.
+    ui_alpha=Image.open(job/'assets/ui.png').getchannel('A')
+    opaque=ui_alpha.point(lambda v:255 if v==255 else 0)
+    box=opaque.getbbox()
+    if box:
+        inset=2  # eat the anti-aliased matte residue just inside the plate boundary
+        x0,y0,x1,y1=box[0]+inset,box[1]+inset,box[2]-inset,box[3]-inset
+        w,h=source.size
+        if x1-x0>0 and y1-y0>0:
+            state['card_rect']=[round((x0+x1)/2/w,5),round((y0+y1)/2/h,5),round((x1-x0)/2/w,5),round((y1-y0)/2/h,5)]
+        else:
+            warnings.append('UI_OPAQUE_REGION_TOO_SMALL')
+    else:
+        warnings.append('UI_OPAQUE_REGION_MISSING')
     (job/'assets/back.png').write_bytes((TEMPLATES/'back.png').read_bytes())
     (job/'index.html').write_text(html_document(job,state,inline=inline))
     state['status']='completed';state['completed_at']=int(time.time()*1000);state['warnings']=warnings

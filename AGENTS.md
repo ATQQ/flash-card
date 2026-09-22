@@ -89,6 +89,8 @@ flash-card-demos/
 - **源头已解决**：`SKILLS/holo-card-lite/`（软链在 `.user_skills/holo-card-lite`）fork 自 holo-card，
   `scripts/native.py` 的 `html_document()` 默认把四层 + 卡背写成相对路径（`assets/*.png`），
   `assemble` 自动把 `back.png` 落盘到 `assets/` 并纳入 zip；`--inline` 保留原 base64 行为。
+  **交付时直接给 `job/index.html` 的文件路径（file:// 打开即可）**，无需起本地服务；
+  只有在嵌入介绍页 iframe / 手机预览时才需要 http(s)，且必须整目录一起提供。
   原版 holo-card 新生成的 `job/index.html` 仍默认内联，接入前需按上述方式去内联
   （替换前先做字节级一致性校验；原文件备份为 `index.html.bak`）
 - `job/assets/*.png` 是对齐好的同尺寸分层图（角色层含 alpha），
