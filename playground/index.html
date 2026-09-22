@@ -118,9 +118,9 @@ button.act.primary{
 }
 .stage{display:flex; flex-direction:column; align-items:center; gap:18px; padding:30px 0}
 .scene{perspective:1200px; touch-action:none}
-/* 卡面固定 640:934（与介绍页活卡一致），高度再受视口约束，不再被素材包围盒带偏 */
+/* 卡面比例由 JS 按当前卡框不透明区域动态设置（默认黑魔导女孩 615:908），高度再受视口约束 */
 .card{
-  position:relative; width:min(400px, 86vw, calc(78svh / 1.4594)); aspect-ratio:640/934;
+  position:relative; width:min(400px, 86vw, calc(78svh / 1.4764)); aspect-ratio:615/908;
   transform-style:preserve-3d; will-change:transform; cursor:grab;
   touch-action:none; user-select:none;
 }
@@ -142,7 +142,8 @@ button.act.primary{
   left:-30%; top:-30%; display:block; pointer-events:none;
 }
 .face.back{transform:rotateY(180deg)}
-.face.back img{width:100%; height:100%; object-fit:cover; display:block}
+.face.back img{width:100%; height:100%; object-fit:cover; display:block; -webkit-user-drag:none}
+img{-webkit-user-drag:none}
 .foot{
   margin-top:40px; text-align:center; color:var(--weak); font-size:12px;
   letter-spacing:.1em; opacity:.85;
@@ -202,7 +203,7 @@ button.act.primary{
         <div class="card" id="card" tabindex="0" role="button" aria-label="点击翻面、拖动旋转，或使用方向键">
           <div class="inner">
             <div class="face front"><canvas id="gl"></canvas></div>
-            <div class="face back"><img id="imgBack" alt="卡背"></div>
+            <div class="face back"><img id="imgBack" alt="卡背" draggable="false"></div>
           </div>
         </div>
       </div>

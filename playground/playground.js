@@ -44,6 +44,12 @@
       img.src = url;
     });
   }
+  // 已加载图片缓存：切素材时免重复解码，合成秒出
+  const imgCache = new Map();
+  function loadImageCached(url) {
+    if (!imgCache.has(url)) imgCache.set(url, loadImage(url));
+    return imgCache.get(url);
+  }
 
   // ---------- 上传（+ 占位触发，新图追加到列表末尾） ----------
   function loadFile(file, cb) {
@@ -199,17 +205,21 @@
   }
 
   // 合成方式与介绍页活卡（如 holo-card/darkmagiciangirl/job/index.html）一致：
-  // 三层全部对齐到固定卡面尺寸（640:934 比例），卡片比例恒定，
+  // 三层全部对齐到统一卡面尺寸，卡片比例恒定，
   // 角色按 alpha 包围盒等比放入卡面居中；缩放/偏移微调交给 shader 的 charScale/charOff。
   const CARD_W = 1280;
-  const CARD_H = Math.round(CARD_W * 934 / 640); // 1868
   const CHAR_FIT = 0.78; // 角色包围盒目标占卡面比例（对齐介绍页成卡的观感）
 
   async function composeLayers() {
     const [bgI, chI, frI] = await Promise.all([
-      loadImage(state.urls.bg), loadImage(state.urls.char), loadImage(state.urls.frame),
+      loadImageCached(state.urls.bg), loadImageCached(state.urls.char), loadImageCached(state.urls.frame),
     ]);
-    const outW = CARD_W, outH = CARD_H;
+
+    // 卡面尺寸 = 卡框的不透明区域（裁掉四周透明边），
+    // 保证右侧全屏预览时卡框紧贴边缘、渲染尺寸就是卡框尺寸。
+    const fb = alphaBBox(frI);
+    const fw = Math.max(1, fb.x1 - fb.x0), fh = Math.max(1, fb.y1 - fb.y0);
+    const outW = CARD_W, outH = Math.round(fh * CARD_W / fw);
 
     // 角色：等比放进卡面（以 alpha 包围盒为界），水平垂直居中
     const bb = alphaBBox(chI);
@@ -228,7 +238,7 @@
     }
 
     const fc = mkCanvas(outW, outH);
-    fc.getContext('2d').drawImage(frI, 0, 0, outW, outH);
+    fc.getContext('2d').drawImage(frI, fb.x0, fb.y0, fw, fh, 0, 0, outW, outH);
 
     return { cc, bc, fc, st: makeStructure(cc), aspect: outH / outW };
   }
@@ -242,13 +252,17 @@
     try { layers = await composeLayers(); } catch (_) { return; }
     if (seq !== buildSeq) return; // 已被更新的构建覆盖
     card.style.aspectRatio = String(1 / layers.aspect); // CSS width/height
-    if (renderer) { renderer.dispose(); renderer = null; }
     try {
-      renderer = await globalThis.HOLO_CREATE_RENDERER(glCanvas, {
+      const next = await globalThis.HOLO_CREATE_RENDERER(glCanvas, {
         character: layers.cc, background: layers.bc, ui: layers.fc, structure: layers.st,
       });
+      if (seq !== buildSeq) { next.dispose(); return; } // 连点时丢弃过期构建
+      // 新 renderer 建好再释放旧的，避免中途失败导致画面空白
+      if (renderer) renderer.dispose();
+      renderer = next;
+      dirty = true; // 立即重绘一帧，不等指针移动
     } catch (e) {
-      renderer = null;
+      // 保留旧 renderer；新构建失败时画面维持上一次可用状态
     }
   }
 
@@ -284,8 +298,7 @@
   const flip = () => { m.base += 180; m.tx = 0; m.ty = m.base; };
 
   card.addEventListener('keydown', (e) => {
-    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }
-    if (e.key.startsWith('Arrow')) {
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }    if (e.key.startsWith('Arrow')) {
       e.preventDefault();
       if (e.key === 'ArrowLeft') m.ty -= 8;
       if (e.key === 'ArrowRight') m.ty += 8;
@@ -293,6 +306,7 @@
       if (e.key === 'ArrowDown') m.tx = Math.max(-45, m.tx - 8);
     }
   });
+  card.addEventListener('dragstart', (e) => e.preventDefault()); // 禁止图片原生拖拽
   card.addEventListener('pointerdown', (e) => {
     if (m.pointer !== null || (e.pointerType === 'mouse' && e.button !== 0)) return;
     m.pointer = e.pointerId;
