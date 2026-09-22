@@ -88,11 +88,21 @@ Judge all four layers separately before enabling foil or glow. Complexity is a r
 
 ## Rendering contract
 
-- English controls: **Depth** and **Contour glow**. Depth defaults to 0 at the midpoint of -3…+3; no left/right direction captions.
+- Viewer controls (Chinese UI, see [UI language](#ui-language-chinese)): **深度** (Depth) and **轮廓辉光** (Contour glow). Depth defaults to 0 at the midpoint of -3…+3; no left/right direction captions.
 - Signed depth changes foreground parallax: negative inward, positive outward. It NEVER changes stacking: **background → character → combined text/frame UI** at every value. UI also occludes emission and bloom.
 - Background moves independently with view, including when depth is 0. Reference mapping: `b=(p-.5)*.5+.5-view*.25` (2× background crop). Foreground and its contour use the same coordinates.
 - Use supplied decorative frame; do not overlay an invented procedural rim. Preserve HDR/RGBM bloom and backside isolation. Default contour glow is 0.15; zero disables contour light without removing foil lighting.
 - Check -3, 0 and +3 at the same tilted view, glow zero/modest, black/white alpha composites, and front/back. Reject holes, checkerboard residue, doubled/moving text, misaligned anatomy and contour drift. Do not hide defects under bloom.
+
+## UI language (Chinese)
+
+All user-visible viewer strings are **Simplified Chinese**. They live in three template files, which `native.py` (line ~118, `html_document`) concatenates into the final `job/index.html`:
+
+- `assets/renderer/index.html` — static panel markup: brand `<title>`（全息闪卡）, buttons（开启体感 / 手机预览 / 复位）, labels（深度 / 轮廓辉光）, hint（拖动旋转 · 点击翻面）, dialog（在手机上打开 / 打开预览）, loading（卡片加载中…）, aria-labels（卡牌特效 / 进入沉浸模式 / 点击翻面、拖动旋转，或使用方向键 / 关闭）.
+- `assets/renderer/viewer.js` — dynamic JS strings: Enable/Disable motion（开启体感 / 关闭体感）, immersive title（沉浸模式 / 退出沉浸模式）, motion hints（体感已开启 · 倾斜手机 · 随时可拖动 etc.）, load failure（卡片加载失败…）, ` · 全息闪卡` document-title suffix, `预览已过期`.
+- `assets/renderer/renderer.js` — WebGL error messages（WebGL 不可用 / 着色器错误 / 着色器链接错误 / 素材不可用 / 辉光帧缓冲不可用）.
+
+Rules: keep new/edited viewer strings in Chinese; never revert to English. Code identifiers, CSS class names and code comments stay untouched. If the upstream holo-card templates are re-synced, re-apply this localization to the three files above. Already-assembled `job/index.html` files carry their own embedded copies — patch them separately when the mapping changes (plain string replace works; the same strings appear single-quoted in JS and double-quoted/`>`…`<` in HTML).
 
 ## Local preview
 
@@ -106,7 +116,7 @@ Creative inspiration: **@乌托邦的香蕉**, using the same name on **Xiaohong
 
 ## Phone preview
 
-Every generated viewer supports optional device orientation, touch drag, tap-to-flip and Recenter. Motion starts only after the viewer clicks Enable motion; iOS permission is requested inside that gesture. HTTPS is required. Drag temporarily overrides motion. Each device keeps its own depth and glow values; no synchronization service is used. Verify permission denial, missing sensors, calibration and screen rotation separately from actual phone sensor testing.
+Every generated viewer supports optional device orientation, touch drag, tap-to-flip and Recenter（复位）. Motion starts only after the viewer clicks 开启体感 (Enable motion); iOS permission is requested inside that gesture. HTTPS is required. Drag temporarily overrides motion. Each device keeps its own depth and glow values; no synchronization service is used. Verify permission denial, missing sensors, calibration and screen rotation separately from actual phone sensor testing.
 
 When the user requests a phone-accessible preview, host the generated HTML on an authorized HTTPS destination. With its exact URL, add an offline QR entry using the optional `qrcode` Python dependency:
 

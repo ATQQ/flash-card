@@ -7,8 +7,8 @@ const immersiveButton = document.querySelector('#immersive');
 function setImmersive(active) {
   document.body.classList.toggle('immersive', active);
   immersiveButton.setAttribute('aria-pressed', String(active));
-  immersiveButton.setAttribute('aria-label', active ? 'Exit immersive mode' : 'Enter immersive mode');
-  immersiveButton.title = active ? 'Exit immersive mode' : 'Immersive mode';
+  immersiveButton.setAttribute('aria-label', active ? '退出沉浸模式' : '进入沉浸模式');
+  immersiveButton.title = active ? '退出沉浸模式' : '沉浸模式';
 }
 immersiveButton.addEventListener('click', () => setImmersive(!document.body.classList.contains('immersive')));
 document.addEventListener('keydown', e => { if (e.key === 'Escape') setImmersive(false); });
@@ -30,7 +30,7 @@ try {
   const manifest =
     globalThis.HOLO_MANIFEST ??
     (await fetch('manifest.json' + query).then((r) => {
-      if (!r.ok) throw new Error('Preview expired');
+      if (!r.ok) throw new Error('预览已过期');
       return r.json();
     }));
   const mobileButton = document.querySelector('#mobile');
@@ -43,7 +43,7 @@ try {
       mobileButton.addEventListener('click', () => document.querySelector('#mobile-dialog').showModal());
     }
   }
-  document.title = manifest.name + ' · Holo Card';
+  document.title = manifest.name + ' · 全息闪卡';
   back.querySelector('img').src = manifest.back ?? 'back.png' + query;
   renderer = await factory(canvas, manifest.assets);
   const aspect = manifest.height / manifest.width;
@@ -76,12 +76,12 @@ try {
     sensorX = sensorY = 0;
     m.tx = 0; m.ty = m.base;
   }
-  function stopMotion(message = 'Drag to rotate · Tap to flip') {
+  function stopMotion(message = '拖动旋转 · 点击翻面') {
     motionEnabled = false;
     clearTimeout(sensorTimer);
     removeEventListener('deviceorientation', onOrientation);
     removeEventListener('devicemotion', onMotion);
-    motionButton.textContent = 'Enable motion';
+    motionButton.textContent = '开启体感';
     motionButton.setAttribute('aria-pressed', 'false');
     hint.textContent = message;
   }
@@ -94,7 +94,7 @@ try {
     const a = (screen.orientation?.angle ?? window.orientation ?? 0) * Math.PI / 180;
     sensorX = clamp(-(b * Math.cos(a) + g * Math.sin(a)) * 0.85);
     sensorY = clamp((g * Math.cos(a) - b * Math.sin(a)) * 0.85);
-    hint.textContent = 'Motion active · Tilt your phone · Drag anytime';
+    hint.textContent = '体感已开启 · 倾斜手机 · 随时可拖动';
   }
   function onMotion(e) {
     if (orientationSeen || !motionEnabled || document.hidden) return;
@@ -107,8 +107,8 @@ try {
   }
   motionButton.addEventListener('click', async () => {
     if (motionEnabled) { stopMotion(); return; }
-    if (!isSecureContext) { hint.textContent = 'Open the HTTPS preview link to enable motion. Drag is available.'; return; }
-    if (!globalThis.DeviceOrientationEvent && !globalThis.DeviceMotionEvent) { hint.textContent = 'Motion is unavailable on this device. Drag to rotate.'; return; }
+    if (!isSecureContext) { hint.textContent = '打开 HTTPS 预览链接才能开启体感；拖动旋转不受影响。'; return; }
+    if (!globalThis.DeviceOrientationEvent && !globalThis.DeviceMotionEvent) { hint.textContent = '当前设备不支持体感，可拖动旋转。'; return; }
     motionButton.disabled = true;
     try {
       // Start both requests synchronously within the tap, before awaiting either.
@@ -123,14 +123,14 @@ try {
       orientationSeen = false;
       calibrate();
       motionEnabled = true;
-      motionButton.textContent = 'Disable motion';
+      motionButton.textContent = '关闭体感';
       motionButton.setAttribute('aria-pressed', 'true');
-      hint.textContent = 'Hold comfortably, then tilt your phone…';
+      hint.textContent = '握稳手机，然后轻轻倾斜…';
       addEventListener('deviceorientation', onOrientation);
       addEventListener('devicemotion', onMotion);
       sensorTimer = setTimeout(() => stopMotion('No sensor data. Open in Safari or Chrome directly, allow Motion & Orientation, then retry. Drag still works.'), 5000);
     } catch {
-      stopMotion('Motion could not start. Check browser permissions, or drag.');
+      stopMotion('体感未能启动。请检查浏览器权限，或直接拖动。');
     } finally { motionButton.disabled = false; }
   });
   resetButton.addEventListener('click', calibrate);
@@ -235,5 +235,5 @@ try {
 } catch {
   status.hidden = false;
   status.textContent =
-    'Unable to load the card. Refresh the preview link or open the downloaded HTML file.';
+    '卡片加载失败。请刷新预览链接，或打开下载好的 HTML 文件。';
 }

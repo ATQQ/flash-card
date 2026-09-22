@@ -75,7 +75,7 @@ export async function createCardRenderer(canvas, assets) {
     powerPreference: 'high-performance',
     preserveDrawingBuffer: true,
   });
-  if (!gl) throw new Error('WebGL unavailable');
+  if (!gl) throw new Error('WebGL 不可用');
   const shaders = [],
     programs = [],
     textures = [],
@@ -92,7 +92,7 @@ export async function createCardRenderer(canvas, assets) {
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
-      throw new Error(gl.getShaderInfoLog(shader) || 'Shader error');
+      throw new Error(gl.getShaderInfoLog(shader) || '着色器错误');
     shaders.push(shader);
     return shader;
   }
@@ -102,7 +102,7 @@ export async function createCardRenderer(canvas, assets) {
     gl.attachShader(p, compile(gl.FRAGMENT_SHADER, source));
     gl.linkProgram(p);
     if (!gl.getProgramParameter(p, gl.LINK_STATUS))
-      throw new Error('Shader link error');
+      throw new Error('着色器链接错误');
     programs.push(p);
     return p;
   }
@@ -131,7 +131,7 @@ export async function createCardRenderer(canvas, assets) {
         new Promise((resolve, reject) => {
           const image = new Image();
           image.onload = () => resolve(image);
-          image.onerror = () => reject(new Error('Asset unavailable'));
+          image.onerror = () => reject(new Error('素材不可用'));
           image.src = assets[name];
         }),
     ),
@@ -173,7 +173,7 @@ export async function createCardRenderer(canvas, assets) {
       0,
     );
     if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE)
-      throw new Error('Bloom framebuffer unavailable');
+      throw new Error('辉光帧缓冲不可用');
     return { t, f, w, h };
   }
   const emission = target(0.5),

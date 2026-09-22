@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>Holo Card</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#101113;color:#dfe6ee;font-family:system-ui,sans-serif;overflow:hidden}.room{height:100svh;background:radial-gradient(ellipse at 50% 45%,#25282b,#101113 80%)}.stage{position:relative;width:100%;height:100%;display:grid;place-items:center;perspective:1400px;isolation:isolate}.card{position:relative;width:min(79vw,440px,calc(74svh / 1.4));aspect-ratio:5/7;transform-style:preserve-3d;will-change:transform;cursor:grab;touch-action:none;user-select:none;transform:rotateX(-5deg) rotateY(-12deg)}.card:active{cursor:grabbing}.card:focus-visible{outline:2px solid #d6ef9d;outline-offset:12px;border-radius:18px}.face{position:absolute;inset:0;border-radius:4.5%/3.2%;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 0 0 1px #202329,0 30px 65px #000b;overflow:hidden}.front{transform:translateZ(.2px);background:#101318}.front canvas{display:block;width:100%;height:100%}.back{visibility:hidden;transform:rotateY(180deg) translateZ(.2px);background:#13216a}.back img{width:100%;height:100%;object-fit:fill;display:block}.status{position:absolute;bottom:24px;left:20px;right:20px;text-align:center;font-size:14px;line-height:1.5}.status[hidden]{display:none}
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>全息闪卡</title><style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#101113;color:#dfe6ee;font-family:system-ui,sans-serif;overflow:hidden}.room{height:100svh;background:radial-gradient(ellipse at 50% 45%,#25282b,#101113 80%)}.stage{position:relative;width:100%;height:100%;display:grid;place-items:center;perspective:1400px;isolation:isolate}.card{position:relative;width:min(79vw,440px,calc(74svh / 1.4));aspect-ratio:5/7;transform-style:preserve-3d;will-change:transform;cursor:grab;touch-action:none;user-select:none;transform:rotateX(-5deg) rotateY(-12deg)}.card:active{cursor:grabbing}.card:focus-visible{outline:2px solid #d6ef9d;outline-offset:12px;border-radius:18px}.face{position:absolute;inset:0;border-radius:4.5%/3.2%;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 0 0 1px #202329,0 30px 65px #000b;overflow:hidden}.front{transform:translateZ(.2px);background:#101318}.front canvas{display:block;width:100%;height:100%}.back{visibility:hidden;transform:rotateY(180deg) translateZ(.2px);background:#13216a}.back img{width:100%;height:100%;object-fit:fill;display:block}.status{position:absolute;bottom:24px;left:20px;right:20px;text-align:center;font-size:14px;line-height:1.5}.status[hidden]{display:none}
 
 .controls{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);width:min(380px,90vw);display:grid;grid-template-columns:90px 1fr 48px;gap:12px;align-items:center;padding:16px 18px;background:#1b1e22e8;border:1px solid #ffffff18;border-radius:16px;font-size:13px}.controls input{width:100%;accent-color:#d6ef9d}.controls output{text-align:right;font-variant-numeric:tabular-nums}.stage{height:calc(100% - 105px)}
 
@@ -13,7 +13,7 @@
 
 /* Oversized transparent foreground surface; background clipping is done in the shader. */
 .front{overflow:visible;background:transparent}.front canvas{position:absolute;width:160%;height:160%;max-width:none;left:-30%;top:-30%;border-radius:0;pointer-events:none}
-</style></head><body><main class="room"><button id="immersive" class="immersive-toggle" type="button" aria-label="Enter immersive mode" aria-pressed="false" title="Immersive mode"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m4 4 16 16"/></svg></button><div class="stage"><div class="card" tabindex="0" role="button" aria-label="Click to flip, drag to rotate, or use arrow keys"><div class="face front"><canvas></canvas></div><div class="face back"><img alt="Card back" draggable="false"></div></div></div><aside class="controls" aria-label="Card effects"><label for="depth">Depth</label><div class="depth-track"><input id="depth" type="range" min="-3" max="3" step="0.05" value="0"><span class="depth-ticks" aria-hidden="true"><span></span><span>0</span><span></span></span></div><output for="depth">0.00×</output><label for="brightness">Contour glow</label><input id="brightness" type="range" min="0" max="3" step="0.05" value="0.15"><output for="brightness">0.15×</output><div class="interaction"><button id="motion" type="button" aria-pressed="false">Enable motion</button><button id="mobile" type="button" hidden>Phone preview</button><button id="reset" type="button">Recenter</button></div><p id="motion-hint" aria-live="polite">Drag to rotate · Tap to flip</p></aside><dialog id="mobile-dialog"><form method="dialog"><button aria-label="Close" class="close">×</button></form><h2>Open on your phone</h2><img id="mobile-qr" alt="Scan to preview this card on your phone"><a id="mobile-link" target="_blank" rel="noopener">Open preview</a><p>Each device has its own controls.</p></dialog><p class="status" role="status">Loading card…</p></main><script type="module">globalThis.HOLO_MANIFEST={"name": "MetalGreymon Holo Card", "width": 1066, "height": 1600, "assets": {"character": "assets/character.png", "background": "assets/background.png", "ui": "assets/ui.png", "structure": "assets/structure.png"}, "back": "back.png"};
+</style></head><body><main class="room"><button id="immersive" class="immersive-toggle" type="button" aria-label="进入沉浸模式" aria-pressed="false" title="沉浸模式"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/><path class="eye-slash" d="m4 4 16 16"/></svg></button><div class="stage"><div class="card" tabindex="0" role="button" aria-label="点击翻面、拖动旋转，或使用方向键"><div class="face front"><canvas></canvas></div><div class="face back"><img alt="Card back" draggable="false"></div></div></div><aside class="controls" aria-label="卡牌特效"><label for="depth">深度</label><div class="depth-track"><input id="depth" type="range" min="-3" max="3" step="0.05" value="0"><span class="depth-ticks" aria-hidden="true"><span></span><span>0</span><span></span></span></div><output for="depth">0.00×</output><label for="brightness">轮廓辉光</label><input id="brightness" type="range" min="0" max="3" step="0.05" value="0.15"><output for="brightness">0.15×</output><div class="interaction"><button id="motion" type="button" aria-pressed="false">开启体感</button><button id="mobile" type="button" hidden>手机预览</button><button id="reset" type="button">复位</button></div><p id="motion-hint" aria-live="polite">拖动旋转 · 点击翻面</p></aside><dialog id="mobile-dialog"><form method="dialog"><button aria-label="关闭" class="close">×</button></form><h2>在手机上打开</h2><img id="mobile-qr" alt="Scan to preview this card on your phone"><a id="mobile-link" target="_blank" rel="noopener">打开预览</a><p>每台设备有各自的控制面板。</p></dialog><p class="status" role="status">卡片加载中…</p></main><script type="module">globalThis.HOLO_MANIFEST={"name": "MetalGreymon 全息闪卡", "width": 1066, "height": 1600, "assets": {"character": "assets/character.png", "background": "assets/background.png", "ui": "assets/ui.png", "structure": "assets/structure.png"}, "back": "back.png"};
 // Snapshot of the shared HDR card renderer; input textures are materialized RGBA layers.
 // Lightweight, view-dependent layered card. No 3D engine or video textures.
 const vertex = `attribute vec2 position; varying vec2 uv; void main(){uv=position*.5+.5;gl_Position=vec4(position,0.,1.);}`;
@@ -91,7 +91,7 @@ async function createCardRenderer(canvas, assets) {
     powerPreference: 'high-performance',
     preserveDrawingBuffer: true,
   });
-  if (!gl) throw new Error('WebGL unavailable');
+  if (!gl) throw new Error('WebGL 不可用');
   const shaders = [],
     programs = [],
     textures = [],
@@ -108,7 +108,7 @@ async function createCardRenderer(canvas, assets) {
     gl.shaderSource(shader, source);
     gl.compileShader(shader);
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
-      throw new Error(gl.getShaderInfoLog(shader) || 'Shader error');
+      throw new Error(gl.getShaderInfoLog(shader) || '着色器错误');
     shaders.push(shader);
     return shader;
   }
@@ -118,7 +118,7 @@ async function createCardRenderer(canvas, assets) {
     gl.attachShader(p, compile(gl.FRAGMENT_SHADER, source));
     gl.linkProgram(p);
     if (!gl.getProgramParameter(p, gl.LINK_STATUS))
-      throw new Error('Shader link error');
+      throw new Error('着色器链接错误');
     programs.push(p);
     return p;
   }
@@ -147,7 +147,7 @@ async function createCardRenderer(canvas, assets) {
         new Promise((resolve, reject) => {
           const image = new Image();
           image.onload = () => resolve(image);
-          image.onerror = () => reject(new Error('Asset unavailable'));
+          image.onerror = () => reject(new Error('素材不可用'));
           image.src = assets[name];
         }),
     ),
@@ -189,7 +189,7 @@ async function createCardRenderer(canvas, assets) {
       0,
     );
     if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE)
-      throw new Error('Bloom framebuffer unavailable');
+      throw new Error('辉光帧缓冲不可用');
     return { t, f, w, h };
   }
   const emission = target(0.5),
@@ -281,8 +281,8 @@ const immersiveButton = document.querySelector('#immersive');
 function setImmersive(active) {
   document.body.classList.toggle('immersive', active);
   immersiveButton.setAttribute('aria-pressed', String(active));
-  immersiveButton.setAttribute('aria-label', active ? 'Exit immersive mode' : 'Enter immersive mode');
-  immersiveButton.title = active ? 'Exit immersive mode' : 'Immersive mode';
+  immersiveButton.setAttribute('aria-label', active ? '退出沉浸模式' : '进入沉浸模式');
+  immersiveButton.title = active ? '退出沉浸模式' : '沉浸模式';
 }
 immersiveButton.addEventListener('click', () => setImmersive(!document.body.classList.contains('immersive')));
 document.addEventListener('keydown', e => { if (e.key === 'Escape') setImmersive(false); });
@@ -304,7 +304,7 @@ try {
   const manifest =
     globalThis.HOLO_MANIFEST ??
     (await fetch('manifest.json' + query).then((r) => {
-      if (!r.ok) throw new Error('Preview expired');
+      if (!r.ok) throw new Error('预览已过期');
       return r.json();
     }));
   const mobileButton = document.querySelector('#mobile');
@@ -317,7 +317,7 @@ try {
       mobileButton.addEventListener('click', () => document.querySelector('#mobile-dialog').showModal());
     }
   }
-  document.title = manifest.name + ' · Holo Card';
+  document.title = manifest.name + ' · 全息闪卡';
   back.querySelector('img').src = manifest.back ?? 'back.png' + query;
   renderer = await factory(canvas, manifest.assets);
   const aspect = manifest.height / manifest.width;
@@ -350,12 +350,12 @@ try {
     sensorX = sensorY = 0;
     m.tx = 0; m.ty = m.base;
   }
-  function stopMotion(message = 'Drag to rotate · Tap to flip') {
+  function stopMotion(message = '拖动旋转 · 点击翻面') {
     motionEnabled = false;
     clearTimeout(sensorTimer);
     removeEventListener('deviceorientation', onOrientation);
     removeEventListener('devicemotion', onMotion);
-    motionButton.textContent = 'Enable motion';
+    motionButton.textContent = '开启体感';
     motionButton.setAttribute('aria-pressed', 'false');
     hint.textContent = message;
   }
@@ -368,7 +368,7 @@ try {
     const a = (screen.orientation?.angle ?? window.orientation ?? 0) * Math.PI / 180;
     sensorX = clamp(-(b * Math.cos(a) + g * Math.sin(a)) * 0.85);
     sensorY = clamp((g * Math.cos(a) - b * Math.sin(a)) * 0.85);
-    hint.textContent = 'Motion active · Tilt your phone · Drag anytime';
+    hint.textContent = '体感已开启 · 倾斜手机 · 随时可拖动';
   }
   function onMotion(e) {
     if (orientationSeen || !motionEnabled || document.hidden) return;
@@ -381,8 +381,8 @@ try {
   }
   motionButton.addEventListener('click', async () => {
     if (motionEnabled) { stopMotion(); return; }
-    if (!isSecureContext) { hint.textContent = 'Open the HTTPS preview link to enable motion. Drag is available.'; return; }
-    if (!globalThis.DeviceOrientationEvent && !globalThis.DeviceMotionEvent) { hint.textContent = 'Motion is unavailable on this device. Drag to rotate.'; return; }
+    if (!isSecureContext) { hint.textContent = '打开 HTTPS 预览链接才能开启体感；拖动旋转不受影响。'; return; }
+    if (!globalThis.DeviceOrientationEvent && !globalThis.DeviceMotionEvent) { hint.textContent = '当前设备不支持体感，可拖动旋转。'; return; }
     motionButton.disabled = true;
     try {
       // Start both requests synchronously within the tap, before awaiting either.
@@ -397,14 +397,14 @@ try {
       orientationSeen = false;
       calibrate();
       motionEnabled = true;
-      motionButton.textContent = 'Disable motion';
+      motionButton.textContent = '关闭体感';
       motionButton.setAttribute('aria-pressed', 'true');
-      hint.textContent = 'Hold comfortably, then tilt your phone…';
+      hint.textContent = '握稳手机，然后轻轻倾斜…';
       addEventListener('deviceorientation', onOrientation);
       addEventListener('devicemotion', onMotion);
       sensorTimer = setTimeout(() => stopMotion('No sensor data. Open in Safari or Chrome directly, allow Motion & Orientation, then retry. Drag still works.'), 5000);
     } catch {
-      stopMotion('Motion could not start. Check browser permissions, or drag.');
+      stopMotion('体感未能启动。请检查浏览器权限，或直接拖动。');
     } finally { motionButton.disabled = false; }
   });
   resetButton.addEventListener('click', calibrate);
@@ -509,6 +509,6 @@ try {
 } catch {
   status.hidden = false;
   status.textContent =
-    'Unable to load the card. Refresh the preview link or open the downloaded HTML file.';
+    '卡片加载失败。请刷新预览链接，或打开下载好的 HTML 文件。';
 }
 </script></body></html>
