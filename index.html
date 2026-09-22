@@ -564,6 +564,18 @@
           <span class="mini-tag">HOLO</span>
         </div>
       </a>
+
+      <a class="mini-card rise d3" href="./holo-card/magician-combo/web/index.html">
+        <div class="mini-frame">
+          <img src="./holo-card/magician-combo/renders/hero.png" alt="魔术师的配合 3D 全息闪卡" loading="lazy" />
+          <span class="mini-sheen" aria-hidden="true"></span>
+        </div>
+        <div class="mini-label">
+          <span class="mini-no">NO.004</span>
+          <span class="mini-name">魔术师的配合</span>
+          <span class="mini-tag">RuiC 3D</span>
+        </div>
+      </a>
     </div>
   </section>
 
@@ -613,12 +625,19 @@
       no: "NO.003", name: "黑魔导女孩 · 全息卡", en: "DARK MAGICIAN GIRL",
       dir: "./holo-card/darkmagiciangirl", url: "./holo-card/darkmagiciangirl/index.html",
       rect: [0.50391, 0.50642, 0.46953, 0.47859]
+    },
+    {
+      no: "NO.004", name: "魔术师的配合 · 全息卡", en: "MAGICIAN COMBO",
+      dir: "./holo-card/magician-combo/assets", url: "./holo-card/magician-combo/web/index.html",
+      files: ["background.png", "subject.png", "text.png"],
+      rect: [0.49854, 0.49967, 0.43018, 0.46777]
     }
   ];
   const picked = heroCards[Math.floor(Math.random() * heroCards.length)];
-  document.getElementById("hc-bg").src = picked.dir + "/background.png";
-  document.getElementById("hc-ch").src = picked.dir + "/character.png";
-  document.getElementById("hc-ui").src = picked.dir + "/ui.png";
+  const pickedFiles = picked.files ?? ["background.png", "character.png", "ui.png"];
+  document.getElementById("hc-bg").src = picked.dir + "/" + pickedFiles[0];
+  document.getElementById("hc-ch").src = picked.dir + "/" + pickedFiles[1];
+  document.getElementById("hc-ui").src = picked.dir + "/" + pickedFiles[2];
   // UI 板不透明区（归一化 [cx,cy,hx,hy]）：把透明边距仿射映射推出卡面，overflow:hidden 裁掉
   const rect = picked.rect ?? [0.5, 0.5, 0.5, 0.5];
   const sx = 1 / (rect[2] * 2), sy = 1 / (rect[3] * 2);
