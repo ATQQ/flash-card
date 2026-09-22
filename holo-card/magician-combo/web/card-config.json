@@ -1,0 +1,30 @@
+{
+  "title": "魔术师的配合",
+  "subtitle": "TRAP CARD",
+  "technique": "双魔导共闘",
+  "tagline": "魔法与陷阱的连锁共鸣",
+  "edition": "NO.001 / 001",
+  "collection": "黑魔导档案",
+  "description": "黑魔术师与黑魔术少女，双阵同时展开。",
+  "font": "/System/Library/Fonts/STHeiti Light.ttc",
+  "assets": {
+    "subject": "./assets/subject.png",
+    "background": "./assets/background.png",
+    "text": "./assets/text.png",
+    "lineart": "./assets/lineart.png",
+    "model": "./assets/card.glb"
+  },
+  "parameters": {
+    "subjectScale": 1.25,
+    "subjectDepth": 0.4,
+    "backgroundDepth": -0.25,
+    "foil": 0.65
+  },
+  "safeArea": {
+    "scale": 1.12,
+    "offset": [
+      -0.06,
+      -0.085
+    ]
+  }
+}

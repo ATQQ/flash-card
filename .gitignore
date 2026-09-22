@@ -1,6 +1,11 @@
 # Holo Card 产物的大体积中间包，不进 git
 holo-card/*/job/card.zip
 
+# RuiC 3D 卡：便携 Blender 运行时与前端依赖，不进 git
+holo-card/*/tools/
+holo-card/*/web/node_modules/
+*.log
+
 # 备份文件
 *.bak
 .workbuddy
