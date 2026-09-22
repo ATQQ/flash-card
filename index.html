@@ -200,7 +200,7 @@
   }
 
   /* ---------- Hero 大卡（签名元素）：随机全息闪卡 ---------- */
-  .hero-card-zone { perspective: 1400px; display: grid; place-items: center; }
+  .hero-card-zone { perspective: 1400px; display: grid; place-items: center; gap: 22px; }
 
   .big-card {
     position: relative;
@@ -344,6 +344,58 @@
     50% { background-position: 100% 50%; }
   }
 
+  /* ---------- 换卡按钮：全息箔胶囊（与 hero 卡同款描边/流光） ---------- */
+  .hero-card-zone { gap: 22px; }
+
+  .shuffle-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-indent: 0.22em; /* 抵消末字符间距，让文字与图标组合居中 */
+    padding: 10px 20px;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    background: var(--foil);
+    background-size: 220% 220%;
+    animation: foil-drift 8s ease-in-out infinite;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    transition: transform 0.3s, filter 0.3s;
+  }
+  .shuffle-btn svg {
+    width: 14px;
+    height: 14px;
+    flex: none;
+    text-indent: 0;
+  }
+  .shuffle-btn::before {
+    /* 全息箔描边，与 hero 卡 ::before 同款 */
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1.5px;
+    background: var(--foil);
+    background-size: 220% 220%;
+    animation: foil-drift 8s ease-in-out infinite;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .shuffle-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.25) drop-shadow(0 12px 22px rgba(139, 92, 255, 0.35));
+  }
+  .shuffle-btn:active { transform: translateY(0); filter: brightness(1.1); }
+
   /* ---------- Demo 卡册 ---------- */
   .grid {
     display: flex;
@@ -412,6 +464,7 @@
     letter-spacing: 0.05em;
     color: var(--text);
     transition: color 0.3s;
+    white-space: nowrap;
   }
   .mini-card:hover .mini-name { color: var(--cyan); }
   .mini-tag {
@@ -501,7 +554,7 @@
     </div>
 
     <div class="hero-card-zone rise d4">
-      <div class="big-card" id="hero-card" role="button" tabindex="0" aria-pressed="false" aria-label="随机展示一张全息闪卡，点击或按回车翻面">
+      <div class="big-card" id="hero-card" role="button" tabindex="0" aria-pressed="false" aria-label="当前展示一张全息闪卡，点击或按回车翻面">
         <div class="face front holo-front">
           <img class="layer bg" id="hc-bg" alt="" aria-hidden="true" />
           <img class="layer ch" id="hc-ch" alt="" />
@@ -519,6 +572,23 @@
           </div>
         </div>
       </div>
+      <button class="shuffle-btn" id="hero-shuffle" type="button" aria-label="随机换一张全息闪卡">
+        <svg viewBox="0 0 24 24" fill="none" stroke="url(#foil-stroke)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <defs>
+            <linearGradient id="foil-stroke" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#43E8D8" />
+              <stop offset="0.5" stop-color="#8B5CFF" />
+              <stop offset="1" stop-color="#FF5CA8" />
+            </linearGradient>
+          </defs>
+          <path d="M16 3h5v5" />
+          <path d="M4 20 21 3" />
+          <path d="M21 16v5h-5" />
+          <path d="M15 15l6 6" />
+          <path d="M4 4l5 5" />
+        </svg>
+        <span>随机</span>
+      </button>
     </div>
   </section>
 
@@ -565,15 +635,15 @@
         </div>
       </a>
 
-      <a class="mini-card rise d3" href="./holo-card/magician-combo/web/index.html">
+      <a class="mini-card rise d3" href="./holo-card/magician-combo/index.html">
         <div class="mini-frame">
-          <img src="./holo-card/magician-combo/renders/hero.png" alt="魔术师的配合 3D 全息闪卡" loading="lazy" />
+          <img src="./holo-card/magician-combo/source.png" alt="魔术师的配合 3D 全息闪卡" loading="lazy" />
           <span class="mini-sheen" aria-hidden="true"></span>
         </div>
         <div class="mini-label">
           <span class="mini-no">NO.004</span>
           <span class="mini-name">魔术师的配合</span>
-          <span class="mini-tag">RuiC 3D</span>
+          <span class="mini-tag">3D</span>
         </div>
       </a>
     </div>
@@ -609,7 +679,7 @@
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); stopAutoFlip(); flipHero(); }
   });
 
-  /* ---- Hero 卡：随机抽取一张全息闪卡（分层素材，无工具栏） ---- */
+  /* ---- Hero 卡：默认黑魔导女孩，点「换一张」随机切换（分层素材，无工具栏） ---- */
   const heroCards = [
     {
       no: "NO.001", name: "机械暴龙兽 · 全息卡", en: "METALGREYMON",
@@ -628,37 +698,57 @@
     },
     {
       no: "NO.004", name: "魔术师的配合 · 全息卡", en: "MAGICIAN COMBO",
-      dir: "./holo-card/magician-combo/assets", url: "./holo-card/magician-combo/web/index.html",
+      dir: "./holo-card/magician-combo/assets", url: "./holo-card/magician-combo/index.html",
       files: ["background.png", "subject.png", "text.png"],
       rect: [0.49854, 0.49967, 0.43018, 0.46777]
     }
   ];
-  const picked = heroCards[Math.floor(Math.random() * heroCards.length)];
-  const pickedFiles = picked.files ?? ["background.png", "character.png", "ui.png"];
-  document.getElementById("hc-bg").src = picked.dir + "/" + pickedFiles[0];
-  document.getElementById("hc-ch").src = picked.dir + "/" + pickedFiles[1];
-  document.getElementById("hc-ui").src = picked.dir + "/" + pickedFiles[2];
+  const pickedFiles = (card) => card.files ?? ["background.png", "character.png", "ui.png"];
+
   // UI 板不透明区（归一化 [cx,cy,hx,hy]）：把透明边距仿射映射推出卡面，overflow:hidden 裁掉
-  const rect = picked.rect ?? [0.5, 0.5, 0.5, 0.5];
-  const sx = 1 / (rect[2] * 2), sy = 1 / (rect[3] * 2);
-  const fit = "translate(" + (-sx * (rect[0] - rect[2]) * 100).toFixed(3) + "%, " +
-    (-sy * (rect[1] - rect[3]) * 100).toFixed(3) + "%) scale(" + sx.toFixed(4) + ", " + sy.toFixed(4) + ")";
-  const layerFits = [
-    ["hc-bg", "translate(50%, 50%) scale(1.10) translate3d(calc(var(--px, 0) * 5px), calc(var(--py, 0) * 5px), 0) translate(-50%, -50%)"],
-    ["hc-ch", "translate(50%, 50%) scale(1.07) translate3d(calc(var(--px, 0) * -13px), calc(var(--py, 0) * -13px), 0) translate(-50%, -50%)"],
-    ["hc-ui", "translate(50%, 50%) scale(1.03) translate3d(calc(var(--px, 0) * 3px), calc(var(--py, 0) * 3px), 0) translate(-50%, -50%)"]
-  ];
-  for (const [id, par] of layerFits) {
-    const el = document.getElementById(id);
-    el.style.objectFit = "fill";
-    el.style.transformOrigin = "0 0";
-    el.style.transform = par + " " + fit;
+  function renderHeroCard(card) {
+    const files = pickedFiles(card);
+    document.getElementById("hc-bg").src = card.dir + "/" + files[0];
+    document.getElementById("hc-ch").src = card.dir + "/" + files[1];
+    document.getElementById("hc-ui").src = card.dir + "/" + files[2];
+    const rect = card.rect ?? [0.5, 0.5, 0.5, 0.5];
+    const sx = 1 / (rect[2] * 2), sy = 1 / (rect[3] * 2);
+    const fit = "translate(" + (-sx * (rect[0] - rect[2]) * 100).toFixed(3) + "%, " +
+      (-sy * (rect[1] - rect[3]) * 100).toFixed(3) + "%) scale(" + sx.toFixed(4) + ", " + sy.toFixed(4) + ")";
+    const layerFits = [
+      ["hc-bg", "translate(50%, 50%) scale(1.10) translate3d(calc(var(--px, 0) * 5px), calc(var(--py, 0) * 5px), 0) translate(-50%, -50%)"],
+      ["hc-ch", "translate(50%, 50%) scale(1.07) translate3d(calc(var(--px, 0) * -13px), calc(var(--py, 0) * -13px), 0) translate(-50%, -50%)"],
+      ["hc-ui", "translate(50%, 50%) scale(1.03) translate3d(calc(var(--px, 0) * 3px), calc(var(--py, 0) * 3px), 0) translate(-50%, -50%)"]
+    ];
+    for (const [id, par] of layerFits) {
+      const el = document.getElementById(id);
+      el.style.objectFit = "fill";
+      el.style.transformOrigin = "0 0";
+      el.style.transform = par + " " + fit;
+    }
+    document.getElementById("hc-name").textContent = card.name;
+    document.getElementById("hc-no").textContent = card.no;
+    document.getElementById("hc-en").textContent = card.en;
+    document.getElementById("hc-link").href = card.url;
+    document.querySelector("#hero-card .layer.ch").alt = card.name + " 立绘";
+    // 换卡时回到正面，避免背面还挂着上一张的信息
+    heroCard.classList.remove("flipped");
+    heroCard.setAttribute("aria-pressed", "false");
   }
-  document.getElementById("hc-name").textContent = picked.name;
-  document.getElementById("hc-no").textContent = picked.no;
-  document.getElementById("hc-en").textContent = picked.en;
-  document.getElementById("hc-link").href = picked.url;
-  document.querySelector("#hero-card .layer.ch").alt = picked.name + " 立绘";
+
+  // 默认展示黑魔导女孩，不再加载即随机；随机只由「换一张」按钮触发
+  let currentHero = heroCards.find((c) => c.en === "DARK MAGICIAN GIRL") ?? heroCards[0];
+  renderHeroCard(currentHero);
+
+  document.getElementById("hero-shuffle").addEventListener("click", () => {
+    if (heroCards.length < 2) return;
+    let next;
+    do {
+      next = heroCards[Math.floor(Math.random() * heroCards.length)];
+    } while (next === currentHero);
+    currentHero = next;
+    renderHeroCard(currentHero);
+  });
 
   // 背面的链接点了就跳转，不要触发翻面
   document.getElementById("hc-link").addEventListener("click", (e) => e.stopPropagation());
