@@ -23,6 +23,26 @@
   };
   const DEF = 'darkmagiciangirl';
 
+  // ---------- 工作栏显隐 ----------
+  const mainEl = $('pgMain');
+  const btnDock = $('btnDock');
+  if (btnDock && mainEl) {
+    const applyDock = (hidden) => {
+      mainEl.classList.toggle('dock-hidden', hidden);
+      btnDock.setAttribute('aria-pressed', String(hidden));
+      btnDock.setAttribute('aria-label', hidden ? '显示工作栏' : '隐藏工作栏');
+      btnDock.title = hidden ? '显示工作栏' : '隐藏工作栏';
+    };
+    try {
+      applyDock(localStorage.getItem('pg-dock-hidden') === '1');
+    } catch (_) { /* ignore */ }
+    btnDock.addEventListener('click', () => {
+      const next = !mainEl.classList.contains('dock-hidden');
+      applyDock(next);
+      try { localStorage.setItem('pg-dock-hidden', next ? '1' : '0'); } catch (_) { /* ignore */ }
+    });
+  }
+
   // ---------- 通用：缩略图行 ----------
   function makeTile(row, { src, name, plus, title }) {
     const el = document.createElement('div');
@@ -121,13 +141,18 @@
   // ---------- M2 自动抠图：不透明角色图一键去背景 + 拉框修补 ----------
   const MATTING = window.PLAYGROUND_MATTING;
   const mat = {
-    box: $('mattingBox'), btn: $('btnMatting'), status: $('mattingStatus'),
+    box: $('mattingBox'), btn: $('btnMatting'), btnMore: $('btnMattingMore'),
+    status: $('mattingStatus'),
     bar: $('mattingBar'), check: $('mattingCheck'), patch: $('mattingPatch'),
     chkOrig: $('chkOrig'), chkMatt: $('chkMatt'),
     chkOrigImg: $('chkOrigImg'), chkMattImg: $('chkMattImg'),
     patchCanvas: $('patchCanvas'), btnUndo: $('btnPatchUndo'),
+    btnRect: $('btnPatchRect'), btnErase: $('btnPatchErase'),
+    brushRow: $('patchBrushRow'), brush: $('sPatchBrush'), hint: $('patchHint'),
+    stage: $('patchStage'),
   };
   mat.barFill = mat.bar.querySelector('i');
+  mat.brushOut = mat.brush && mat.brush.nextElementSibling;
   const matt = {
     origUrl: null, mattedUrl: null, tile: null, busy: false, using: 'matt',
     work: null, // 当前抠后 RGBA 工作画布（拉框直接改它）
@@ -137,6 +162,151 @@
   const PATCH_VIEW_W = 280;
   const charMattHint = $('charMattHint');
   if (MATTING && MATTING.supported && charMattHint) charMattHint.hidden = false;
+
+  // ---------- 工程导入/导出：当前设置 + 四层图（含已抠角色） ----------
+  const ws = {
+    status: $('wsStatus'),
+    btnImport: $('btnWsImport'), btnExport: $('btnWsExport'),
+    file: $('fileWs'),
+  };
+
+  function downloadBlob(blob, filename) {
+    const a = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    a.href = url;
+    a.download = filename;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+
+  async function urlToDataURL(url) {
+    if (!url) return null;
+    if (String(url).startsWith('data:')) return url;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('读取图层失败');
+    const blob = await res.blob();
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.onerror = () => reject(new Error('编码失败'));
+      r.readAsDataURL(blob);
+    });
+  }
+
+  function applySettings(s) {
+    if (!s || typeof s !== 'object') return;
+    Object.keys(defaults).forEach((k) => {
+      if (s[k] == null || !sliders[k]) return;
+      const v = +s[k];
+      state[k] = v;
+      sliders[k].value = v;
+      sliders[k].nextElementSibling.textContent = /[XY]$/.test(k)
+        ? Math.round(v) : (+v).toFixed(2);
+    });
+    dirty = true;
+  }
+
+  function appendCustomTile(kind, url, name) {
+    const row = rows[kind];
+    if (!row) return null;
+    const tile = makeTile(row, { src: url, name: name || '导入', title: name || '导入素材' });
+    tile.addEventListener('click', () => {
+      if (kind === 'back') {
+        imgBack.src = url;
+        markOnly(row, tile);
+        return;
+      }
+      state.urls[kind] = url;
+      rebuildRenderer();
+      markOnly(row, tile);
+      if (kind === 'char') showMatting(url, tile);
+    });
+    return tile;
+  }
+
+  async function exportWorkspace() {
+    if (ws.status) ws.status.textContent = '导出中…';
+    const settings = {};
+    Object.keys(defaults).forEach((k) => { settings[k] = state[k]; });
+    const pack = {
+      version: 1,
+      kind: 'playground-workspace',
+      exportedAt: new Date().toISOString(),
+      settings,
+      layers: {
+        bg: await urlToDataURL(state.urls.bg),
+        char: await urlToDataURL(state.urls.char),
+        frame: await urlToDataURL(state.urls.frame),
+        back: await urlToDataURL(imgBack && imgBack.src),
+      },
+    };
+    const blob = new Blob([JSON.stringify(pack)], { type: 'application/json' });
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+    downloadBlob(blob, `playground-${stamp}.json`);
+    if (ws.status) ws.status.textContent = '已导出';
+  }
+
+  async function importWorkspace(file) {
+    const text = await file.text();
+    const pack = JSON.parse(text);
+    if (!pack || pack.kind !== 'playground-workspace' || !pack.layers) {
+      throw new Error('不是有效的工程文件');
+    }
+    applySettings(pack.settings);
+    const layers = pack.layers;
+    const map = [
+      ['bg', layers.bg, '导入背景'],
+      ['char', layers.char, '导入角色'],
+      ['frame', layers.frame, '导入卡框'],
+      ['back', layers.back, '导入卡背'],
+    ];
+    for (const [kind, dataUrl, name] of map) {
+      if (!dataUrl) continue;
+      const tile = appendCustomTile(kind, dataUrl, name);
+      if (!tile) continue;
+      if (kind === 'back') {
+        imgBack.src = dataUrl;
+        markOnly(rows.back, tile);
+      } else {
+        state.urls[kind] = dataUrl;
+        markOnly(rows[kind], tile);
+        if (kind === 'char') hideMatting(); // 导入角色多半已含 alpha
+      }
+    }
+    await rebuildRenderer();
+  }
+
+  if (ws.btnExport) {
+    ws.btnExport.addEventListener('click', async () => {
+      ws.btnExport.disabled = true;
+      try { await exportWorkspace(); }
+      catch (err) { if (ws.status) ws.status.textContent = '导出失败'; console.warn(err); }
+      finally { ws.btnExport.disabled = false; }
+    });
+  }
+  if (ws.btnImport && ws.file) {
+    ws.btnImport.addEventListener('click', () => ws.file.click());
+    ws.file.addEventListener('change', async () => {
+      const file = ws.file.files && ws.file.files[0];
+      if (!file) return;
+      ws.btnImport.disabled = true;
+      if (ws.status) ws.status.textContent = '导入中…';
+      try {
+        await importWorkspace(file);
+        if (ws.status) ws.status.textContent = '已导入';
+      } catch (err) {
+        if (ws.status) ws.status.textContent = '导入失败';
+        console.warn(err);
+        alert((err && err.message) || '导入失败');
+      } finally {
+        ws.btnImport.disabled = false;
+        ws.file.value = '';
+      }
+    });
+  }
 
   function mattThumb(srcC, checker) {
     const c = mkCanvas(104, 140);
@@ -169,6 +339,7 @@
   function mattingResetUI() {
     mat.btn.textContent = '自动抠图';
     mat.btn.disabled = false;
+    if (mat.btnMore) { mat.btnMore.hidden = true; mat.btnMore.disabled = false; }
     mat.status.hidden = true;
     mat.bar.hidden = true;
     mat.check.hidden = true; // 未点自动抠图不展示抠前/抠后占位
@@ -185,7 +356,38 @@
     mattingResetUI();
   }
 
-  // ---- 拉框修补：棋盘底 + 工作图画到侧栏 canvas ----
+  // ---- 拉框 / 橡皮修补：棋盘底 + 工作图画到侧栏 canvas ----
+  const patchTool = { mode: 'rect', brush: 24, hover: null }; // mode: rect | erase
+
+  function setPatchMode(mode) {
+    patchTool.mode = mode === 'erase' ? 'erase' : 'rect';
+    if (mat.btnRect) {
+      mat.btnRect.classList.toggle('on', patchTool.mode === 'rect');
+      mat.btnRect.setAttribute('aria-pressed', patchTool.mode === 'rect' ? 'true' : 'false');
+    }
+    if (mat.btnErase) {
+      mat.btnErase.classList.toggle('on', patchTool.mode === 'erase');
+      mat.btnErase.setAttribute('aria-pressed', patchTool.mode === 'erase' ? 'true' : 'false');
+    }
+    if (mat.brushRow) mat.brushRow.hidden = patchTool.mode !== 'erase';
+    if (mat.stage) mat.stage.classList.toggle('erase', patchTool.mode === 'erase');
+    if (mat.hint) {
+      mat.hint.textContent = patchTool.mode === 'erase'
+        ? '按住拖动画笔擦除残留 · 可调大小 · 可多次'
+        : '拉框标记要抠掉的区域 · 可多次 · Esc 取消';
+    }
+    drawPatchView(patchDrag.down && patchTool.mode === 'rect' ? patchDrag : null);
+  }
+  if (mat.btnRect) mat.btnRect.addEventListener('click', () => setPatchMode('rect'));
+  if (mat.btnErase) mat.btnErase.addEventListener('click', () => setPatchMode('erase'));
+  if (mat.brush) {
+    mat.brush.addEventListener('input', () => {
+      patchTool.brush = +mat.brush.value;
+      if (mat.brushOut) mat.brushOut.textContent = String(patchTool.brush);
+      if (patchTool.mode === 'erase') drawPatchView(null);
+    });
+  }
+
   function drawPatchView(sel) {
     const work = matt.work;
     const c = mat.patchCanvas;
@@ -205,7 +407,7 @@
     }
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(work, 0, 0, dw, dh);
-    if (sel) {
+    if (sel && patchTool.mode === 'rect') {
       const x = Math.min(sel.x0, sel.x1);
       const y = Math.min(sel.y0, sel.y1);
       const w = Math.abs(sel.x1 - sel.x0);
@@ -216,12 +418,26 @@
       ctx.lineWidth = 1.5;
       ctx.strokeRect(x + 0.5, y + 0.5, Math.max(0, w - 1), Math.max(0, h - 1));
     }
+    // 橡皮光标预览（视图坐标半径 = 笔刷 / patchScale）
+    if (patchTool.mode === 'erase' && patchTool.hover) {
+      const r = Math.max(2, patchTool.brush / (matt.patchScale || 1) / 2);
+      ctx.beginPath();
+      ctx.arc(patchTool.hover.x, patchTool.hover.y, r, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,92,168,.9)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(255,92,168,.12)';
+      ctx.fill();
+    }
   }
 
   function showPatchPanel(on) {
     if (!mat.patch) return;
     mat.patch.hidden = !on;
-    if (on && matt.work) drawPatchView(null);
+    if (on && matt.work) {
+      setPatchMode(patchTool.mode);
+      drawPatchView(null);
+    }
   }
 
   async function commitPatchWork() {
@@ -272,7 +488,37 @@
     };
   }
 
-  const patchDrag = { down: false, x0: 0, y0: 0, x1: 0, y1: 0, pointer: null };
+  function eraseAtView(vx, vy) {
+    if (!matt.work) return;
+    const s = matt.patchScale || 1;
+    const wx = vx * s;
+    const wy = vy * s;
+    const r = Math.max(1, patchTool.brush / 2);
+    const ctx = matt.work.getContext('2d');
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(wx, wy, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function eraseStroke(x0, y0, x1, y1) {
+    const s = matt.patchScale || 1;
+    const dx = (x1 - x0) * s;
+    const dy = (y1 - y0) * s;
+    const dist = Math.hypot(dx, dy);
+    const step = Math.max(1, patchTool.brush * 0.35);
+    const n = Math.max(1, Math.ceil(dist / step));
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      eraseAtView(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t);
+    }
+  }
+
+  const patchDrag = {
+    down: false, x0: 0, y0: 0, x1: 0, y1: 0, pointer: null, erased: false,
+  };
   mat.patchCanvas.addEventListener('pointerdown', (e) => {
     if (mat.patch.hidden || !matt.work || matt.using !== 'matt') return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -282,15 +528,41 @@
     patchDrag.pointer = e.pointerId;
     patchDrag.x0 = patchDrag.x1 = p.x;
     patchDrag.y0 = patchDrag.y1 = p.y;
+    patchDrag.erased = false;
     mat.patchCanvas.setPointerCapture(e.pointerId);
-    drawPatchView(patchDrag);
+    if (patchTool.mode === 'erase') {
+      pushPatchUndo();
+      eraseAtView(p.x, p.y);
+      patchDrag.erased = true;
+      patchTool.hover = p;
+      drawPatchView(null);
+    } else {
+      drawPatchView(patchDrag);
+    }
   });
   mat.patchCanvas.addEventListener('pointermove', (e) => {
-    if (!patchDrag.down || patchDrag.pointer !== e.pointerId) return;
     const p = patchPointerPos(e);
+    if (patchTool.mode === 'erase') {
+      patchTool.hover = p;
+      if (patchDrag.down && patchDrag.pointer === e.pointerId) {
+        eraseStroke(patchDrag.x1, patchDrag.y1, p.x, p.y);
+        patchDrag.x1 = p.x;
+        patchDrag.y1 = p.y;
+        patchDrag.erased = true;
+      }
+      drawPatchView(null);
+      return;
+    }
+    if (!patchDrag.down || patchDrag.pointer !== e.pointerId) return;
     patchDrag.x1 = p.x;
     patchDrag.y1 = p.y;
     drawPatchView(patchDrag);
+  });
+  mat.patchCanvas.addEventListener('pointerleave', () => {
+    if (patchTool.mode === 'erase' && !patchDrag.down) {
+      patchTool.hover = null;
+      drawPatchView(null);
+    }
   });
   async function finishPatchDrag(e) {
     if (!patchDrag.down || (e && patchDrag.pointer !== e.pointerId)) return;
@@ -299,6 +571,17 @@
       mat.patchCanvas.releasePointerCapture(e.pointerId);
     }
     patchDrag.pointer = null;
+
+    if (patchTool.mode === 'erase') {
+      if (patchDrag.erased) await commitPatchWork();
+      else {
+        // 空操作时丢掉刚 push 的 undo
+        if (matt.undo.length) { matt.undo.pop(); mat.btnUndo.disabled = !matt.undo.length; }
+        drawPatchView(null);
+      }
+      return;
+    }
+
     const vx0 = Math.min(patchDrag.x0, patchDrag.x1);
     const vy0 = Math.min(patchDrag.y0, patchDrag.y1);
     const vw = Math.abs(patchDrag.x1 - patchDrag.x0);
@@ -316,19 +599,23 @@
   }
   mat.patchCanvas.addEventListener('pointerup', (e) => { finishPatchDrag(e); });
   mat.patchCanvas.addEventListener('pointercancel', (e) => {
+    if (patchTool.mode === 'erase' && patchDrag.down && patchDrag.erased) {
+      finishPatchDrag(e);
+      return;
+    }
     patchDrag.down = false;
     patchDrag.pointer = null;
     drawPatchView(null);
   });
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && patchDrag.down) {
+    if (e.key === 'Escape' && patchDrag.down && patchTool.mode === 'rect') {
       patchDrag.down = false;
       patchDrag.pointer = null;
       drawPatchView(null);
     }
   });
 
-  // 抠前 / 抠后自由切换预览（仅抠完后可用）；切到抠后才显示拉框修补
+  // 抠前 / 抠后自由切换预览（仅抠完后可用）；切到抠后才显示修补面板
   function applyMattingVersion(ver) {
     if (!matt.origUrl || !matt.mattedUrl) return;
     const url = ver === 'orig' ? matt.origUrl : matt.mattedUrl;
@@ -377,10 +664,15 @@
     });
   }
 
-  mat.btn.addEventListener('click', async () => {
+  mat.btn.addEventListener('click', () => runAutoMatting(false));
+  if (mat.btnMore) mat.btnMore.addEventListener('click', () => runAutoMatting(true));
+
+  async function runAutoMatting(continueFromMatt) {
     if (matt.busy || !matt.origUrl || !MATTING || !MATTING.supported) return;
+    if (continueFromMatt && !matt.work && !matt.mattedUrl) return;
     matt.busy = true;
     mat.btn.disabled = true;
+    if (mat.btnMore) mat.btnMore.disabled = true;
     mat.check.hidden = true;
     showPatchPanel(false);
     try {
@@ -388,16 +680,26 @@
       mat.status.textContent = '准备模型…';
       await MATTING.ensure();
       mat.bar.hidden = true;
-      mat.status.textContent = '抠图中…';
+      mat.status.textContent = continueFromMatt ? '继续抠图中…' : '抠图中…';
 
-      // 推理输入压长边 ≤1024（PRD §6）；模型仍为 RMBG-1.4 INT8，不变
-      const img = await loadImageCached(matt.origUrl);
+      // 推理输入压长边 ≤1024（PRD §6）
+      // 重新抠：原图；继续扣：当前抠后图画在白底上再推理，结果与现有 alpha 相交
+      const srcImg = continueFromMatt
+        ? (matt.work || await loadImageCached(matt.mattedUrl))
+        : await loadImageCached(matt.origUrl);
+      const sw = srcImg.width || srcImg.naturalWidth;
+      const sh = srcImg.height || srcImg.naturalHeight;
       const S = 1024;
-      const k = Math.min(1, S / Math.max(img.naturalWidth, img.naturalHeight));
-      const iw = Math.max(1, Math.round(img.naturalWidth * k));
-      const ih = Math.max(1, Math.round(img.naturalHeight * k));
+      const k = Math.min(1, S / Math.max(sw, sh));
+      const iw = Math.max(1, Math.round(sw * k));
+      const ih = Math.max(1, Math.round(sh * k));
       const inC = mkCanvas(iw, ih);
-      inC.getContext('2d').drawImage(img, 0, 0, iw, ih);
+      const inCtx = inC.getContext('2d');
+      if (continueFromMatt) {
+        inCtx.fillStyle = '#ffffff';
+        inCtx.fillRect(0, 0, iw, ih);
+      }
+      inCtx.drawImage(srcImg, 0, 0, iw, ih);
       const { alpha } = await MATTING.run(inC);
 
       const maskC = mkCanvas(iw, ih);
@@ -407,43 +709,55 @@
         mid.data[i] = 255; mid.data[i + 1] = 255; mid.data[i + 2] = 255; mid.data[i + 3] = alpha[j];
       }
       mctx.putImageData(mid, 0, 0);
-      const outC = mkCanvas(img.naturalWidth, img.naturalHeight);
+
+      const outC = mkCanvas(sw, sh);
       const octx = outC.getContext('2d');
-      octx.drawImage(img, 0, 0);
+      if (continueFromMatt && matt.work) {
+        pushPatchUndo(); // 可撤销这一轮「继续扣」
+        octx.drawImage(matt.work, 0, 0);
+      } else {
+        const origImg = await loadImageCached(matt.origUrl);
+        octx.drawImage(origImg, 0, 0);
+      }
       octx.globalCompositeOperation = 'destination-in';
       octx.imageSmoothingEnabled = true;
       octx.imageSmoothingQuality = 'high';
       octx.drawImage(maskC, 0, 0, outC.width, outC.height);
 
-      const origC = mkCanvas(img.naturalWidth, img.naturalHeight);
-      origC.getContext('2d').drawImage(img, 0, 0);
-      mat.chkOrigImg.src = mattThumb(origC, false);
+      if (!continueFromMatt) {
+        const origC = mkCanvas(sw, sh);
+        const origImg = await loadImageCached(matt.origUrl);
+        origC.getContext('2d').drawImage(origImg, 0, 0);
+        mat.chkOrigImg.src = mattThumb(origC, false);
+        matt.undo = [];
+        mat.btnUndo.disabled = true;
+      }
       mat.chkMattImg.src = mattThumb(outC, true);
 
-      // 工作画布 = 抠后图副本，供拉框清 alpha
       matt.work = mkCanvas(outC.width, outC.height);
       matt.work.getContext('2d').drawImage(outC, 0, 0);
-      matt.undo = [];
-      mat.btnUndo.disabled = true;
 
       const blob = await new Promise((res, rej) => outC.toBlob((b) => b ? res(b) : rej(new Error('toBlob 失败')), 'image/png'));
       if (matt.mattedUrl) URL.revokeObjectURL(matt.mattedUrl);
       matt.mattedUrl = URL.createObjectURL(blob);
       mat.btn.disabled = false;
       mat.btn.textContent = '重新抠图';
+      if (mat.btnMore) { mat.btnMore.hidden = false; mat.btnMore.disabled = false; }
       mat.status.hidden = true;
       mat.check.hidden = false;
-      applyMattingVersion('matt'); // 会顺带 showPatchPanel(true)
+      applyMattingVersion('matt');
     } catch (err) {
       mat.status.hidden = false;
       mat.status.textContent = '抠图失败：' + (err && err.message || err);
       mat.btn.disabled = false;
-      mat.check.hidden = true;
-      resetPatchState();
+      if (mat.btnMore) mat.btnMore.disabled = !matt.mattedUrl;
+      if (!matt.mattedUrl) mat.check.hidden = true;
+      else { mat.check.hidden = false; showPatchPanel(true); }
+      if (!continueFromMatt) resetPatchState();
     } finally {
       matt.busy = false;
     }
-  });
+  }
 
   // ---------- 预制绑定（+ 占位在行首） ----------
   addPlusTile('bg'); addPlusTile('char'); addPlusTile('frame'); addPlusTile('back');
@@ -630,38 +944,102 @@
     dirty = true; // 重置后立即重绘
   });
 
-  // ---------- 交互：拖拽 360° 旋转 / 悬停视差 / 轻点翻面（与介绍页活卡 job/index.html 一致） ----------
+  // ---------- 交互：拖拽 360° 旋转 / 悬停视差 / 轻点翻面 / 悬停保持 / 自动旋转 ----------
   const faceFront = card.querySelector('.face.front');
   const faceBack = card.querySelector('.face.back');
   const m = {
     x: -5, y: -12, tx: -5, ty: -12, base: 0,
     down: false, px: 0, py: 0, moved: false, pointer: null, startX: 0, startY: 0,
+    holdPose: false,
+  };
+  const spin = {
+    active: false,        // 正在加速/匀速转
+    vel: 0,               // deg/s
+    maxVel: 3200,         // 峰值约 9 圈/秒，体感很快
+    accel: 120,           // 起步加速度
+    boost: 1.65,          // 速度反馈：越快加越猛 → 明显「越转越快」
+    decel: 900,           // 减速：高峰约 3～4s 停稳
+    kick: 45,             // 起步初速，避免从 0 感觉顿一下
   };
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const flip = () => { m.base += 180; m.tx = 0; m.ty = m.base; };
+  const flip = () => {
+    if (spin.active || spin.vel > 0) stopSpin();
+    m.base += 180; m.tx = 0; m.ty = m.base;
+  };
+
+  const btnHold = $('btnHoldPose');
+  const btnSpin = $('btnSpin');
+  function setHoldPose(on) {
+    m.holdPose = !!on;
+    if (btnHold) {
+      btnHold.setAttribute('aria-pressed', String(m.holdPose));
+      btnHold.textContent = m.holdPose ? '开' : '关';
+    }
+  }
+  if (btnHold) {
+    btnHold.addEventListener('click', () => setHoldPose(!m.holdPose));
+  }
+
+  function updateSpinBtn() {
+    if (!btnSpin) return;
+    if (spin.active) {
+      btnSpin.textContent = '停止';
+      btnSpin.classList.add('primary');
+    } else if (spin.vel > 0.5) {
+      btnSpin.textContent = '减速中';
+      btnSpin.disabled = true;
+    } else {
+      btnSpin.textContent = '自动旋转';
+      btnSpin.disabled = false;
+      btnSpin.classList.remove('primary');
+    }
+  }
+  function startSpin() {
+    if (reduced) return;
+    spin.active = true;
+    if (spin.vel < spin.kick) spin.vel = spin.kick;
+    m.tx = Math.max(-12, Math.min(12, m.x));
+    m.base = m.ty;
+    updateSpinBtn();
+  }
+  function stopSpin() {
+    spin.active = false;
+    updateSpinBtn();
+  }
+  if (btnSpin) {
+    btnSpin.addEventListener('click', () => {
+      if (spin.active) stopSpin();
+      else if (spin.vel < 0.5) startSpin();
+    });
+  }
 
   card.addEventListener('keydown', (e) => {
-    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }    if (e.key.startsWith('Arrow')) {
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }
+    if (e.key.startsWith('Arrow')) {
       e.preventDefault();
+      if (spin.active || spin.vel > 0) stopSpin();
       if (e.key === 'ArrowLeft') m.ty -= 8;
       if (e.key === 'ArrowRight') m.ty += 8;
       if (e.key === 'ArrowUp') m.tx = Math.min(45, m.tx + 8);
       if (e.key === 'ArrowDown') m.tx = Math.max(-45, m.tx - 8);
+      if (m.holdPose) { m.base = Math.round(m.ty / 180) * 180; }
     }
   });
-  card.addEventListener('dragstart', (e) => e.preventDefault()); // 禁止图片原生拖拽
+  card.addEventListener('dragstart', (e) => e.preventDefault());
   card.addEventListener('pointerdown', (e) => {
     if (m.pointer !== null || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    if (spin.active || spin.vel > 0) stopSpin();
     m.pointer = e.pointerId;
     m.startX = e.clientX; m.startY = e.clientY;
     m.down = true; m.px = e.clientX; m.py = e.clientY; m.moved = false;
     card.setPointerCapture(e.pointerId);
   });
   card.addEventListener('pointermove', (e) => {
+    if (spin.active || spin.vel > 1) return; // 旋转中不抢控制
     if (m.down && m.pointer === e.pointerId) {
       const dx = e.clientX - m.px, dy = e.clientY - m.py;
       if (Math.hypot(e.clientX - m.startX, e.clientY - m.startY) > 5) m.moved = true;
-      m.ty += dx * 0.62;                                // 偏航自由旋转，可转任意圈
+      m.ty += dx * 0.62;
       m.tx = Math.max(-50, Math.min(50, m.tx - dy * 0.3));
       m.px = e.clientX; m.py = e.clientY;
     } else if (!m.down && e.pointerType === 'mouse') {
@@ -673,24 +1051,70 @@
     if (m.pointer !== e.pointerId) return;
     m.pointer = null; m.down = false;
     if (card.hasPointerCapture(e.pointerId)) card.releasePointerCapture(e.pointerId);
-    if (!m.moved) flip();                               // 轻点 = 翻面
-    else m.base = Math.round(m.ty / 180) * 180;         // 拖拽松手吸附最近 180°，任意角度停留
+    if (!m.moved) flip();
+    else if (m.holdPose) {
+      // 悬停保持：松手留在当前姿态
+      m.base = m.ty;
+    } else {
+      m.base = Math.round(m.ty / 180) * 180;
+      m.tx = 0;
+      m.ty = m.base;
+    }
   });
-  const cancelDrag = () => { m.pointer = null; m.down = false; m.base = Math.round(m.ty / 180) * 180; };
+  const cancelDrag = () => {
+    m.pointer = null; m.down = false;
+    if (m.holdPose) { m.base = m.ty; return; }
+    m.base = Math.round(m.ty / 180) * 180;
+    m.tx = 0; m.ty = m.base;
+  };
   card.addEventListener('pointercancel', cancelDrag);
   card.addEventListener('lostpointercapture', () => { if (m.down) cancelDrag(); });
   card.addEventListener('pointerleave', () => {
-    if (!m.down) { m.tx = 0; m.ty = m.base; }
+    if (m.down || spin.active || spin.vel > 0) return;
+    if (m.holdPose) { m.base = m.ty; return; } // 离开仍保持当前倾角
+    m.tx = 0; m.ty = m.base;
   });
 
   $('btnFlip').addEventListener('click', flip);
 
   // 渲染循环：卡片 CSS 3D 旋转 + 按转角显隐正/背面；depth=0 使内容全部裁进卡框
   let lastX = 999, lastY = 999;
-  (function frame() {
-    const ease = reduced ? 1 : 0.115;
-    m.x += (m.tx - m.x) * ease;
-    m.y += (m.ty - m.y) * ease;
+  let lastT = performance.now();
+  (function frame(now) {
+    const dt = Math.min(0.05, Math.max(0, (now - lastT) / 1000));
+    lastT = now;
+
+    // 自动旋转：指数加速到峰值；点停止后减速，约几秒内停稳
+    // 旋转时 m.y 直跟 m.ty，避开 ease 把高速「吃掉」
+    let spinning = false;
+    if (!reduced && (spin.active || spin.vel > 0)) {
+      spinning = true;
+      if (spin.active) {
+        spin.vel = Math.min(
+          spin.maxVel,
+          spin.vel + (spin.accel + spin.vel * spin.boost) * dt,
+        );
+      } else {
+        spin.vel = Math.max(0, spin.vel - spin.decel * dt);
+        if (spin.vel === 0) {
+          m.base = Math.round(m.ty / 180) * 180;
+          m.ty = m.base;
+          updateSpinBtn();
+        } else {
+          updateSpinBtn();
+        }
+      }
+      m.ty += spin.vel * dt;
+      m.tx = Math.sin((m.ty * Math.PI) / 180) * 10;
+      m.y = m.ty;
+      m.x += (m.tx - m.x) * (reduced ? 1 : 0.2);
+    }
+
+    if (!spinning) {
+      const ease = reduced ? 1 : 0.115;
+      m.x += (m.tx - m.x) * ease;
+      m.y += (m.ty - m.y) * ease;
+    }
     card.style.transform = `rotateX(${m.x}deg) rotateY(${m.y}deg)`;
     const visible =
       Math.cos((m.y * Math.PI) / 180) * Math.cos((m.x * Math.PI) / 180) > 0.001;
@@ -713,7 +1137,7 @@
       lastX = m.x; lastY = m.y;
     }
     requestAnimationFrame(frame);
-  })();
+  })(performance.now());
 
   // ---------- 启动：默认整套黑魔导女孩 + 经典卡背 ----------
   const bgIdx = PRESETS.backgrounds.findIndex((x) => x.id === DEF);

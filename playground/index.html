@@ -15,10 +15,10 @@
   --cyan:#43E8D8; --line:rgba(155,147,196,.22);
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%}
+html,body{height:100%; overflow:hidden}
 body{
   background:var(--bg); color:var(--text);
-  font-family:'Noto Sans SC',sans-serif; overflow-x:hidden;
+  font-family:'Noto Sans SC',sans-serif;
 }
 body::before{
   content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
@@ -34,8 +34,12 @@ body::after{
     linear-gradient(90deg, rgba(155,147,196,.05) 1px, transparent 1px);
   background-size:44px 44px;
 }
-.wrap{position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:28px 24px 60px}
-header{display:flex; align-items:baseline; gap:16px; margin-bottom:26px; flex-wrap:wrap}
+.wrap{
+  position:relative; z-index:1; width:100%; max-width:none; margin:0;
+  height:100%; max-height:100dvh; padding:16px 20px 10px;
+  display:flex; flex-direction:column; min-height:0;
+}
+header{display:flex; align-items:baseline; gap:16px; margin-bottom:12px; flex-wrap:wrap; flex-shrink:0}
 header .back{color:var(--weak); text-decoration:none; font-size:13px; letter-spacing:.08em}
 header .back:hover{color:var(--cyan)}
 h1{font-family:'Unbounded',sans-serif; font-size:24px; font-weight:600; letter-spacing:.04em}
@@ -45,13 +49,52 @@ h1 em{font-style:normal; background:var(--foil); -webkit-background-clip:text; b
   border:1px solid var(--line); border-radius:999px; padding:3px 10px; letter-spacing:.1em;
   white-space:nowrap;
 }
-main{display:grid; grid-template-columns:352px 1fr; gap:28px; align-items:start}
-@media (max-width:900px){
-  main{grid-template-columns:1fr; gap:18px}
-  .stage{order:-1; padding:14px 0 4px}   /* 窄屏：预览在上，操作在下 */
-  .card{width:min(340px, 86vw)}
+main{
+  flex:1; min-height:0; display:grid;
+  grid-template-columns:minmax(280px, 360px) minmax(0, 1fr) minmax(260px, 320px);
+  gap:14px; align-items:stretch; overflow:hidden;
+  transition:grid-template-columns .28s ease;
 }
-.panel{display:flex; flex-direction:column; gap:14px}
+main.dock-hidden{
+  grid-template-columns:minmax(0, 1fr);
+}
+main.dock-hidden .panel{display:none}
+@media (max-width:1100px){
+  main{grid-template-columns:minmax(260px, 320px) minmax(0, 1fr) minmax(240px, 280px)}
+}
+@media (max-width:900px){
+  main{grid-template-columns:1fr; gap:12px; overflow-y:auto; overflow-x:hidden}
+  main.dock-hidden{grid-template-columns:1fr}
+  main.dock-hidden .panel{display:none}
+  .stage{
+    order:-1; padding:8px 0 4px; position:sticky; top:0; z-index:2;
+    background:linear-gradient(var(--bg) 70%, transparent); flex-shrink:0;
+  }
+  .panel{overflow:visible; max-height:none; padding-right:0}
+  .card{width:min(280px, 70vw)}
+}
+.panel{
+  position:relative; display:flex; flex-direction:column; gap:12px;
+  min-height:0; overflow-x:hidden; overflow-y:auto;
+  padding-right:6px; overscroll-behavior:contain;
+  scrollbar-gutter:stable; z-index:2;
+}
+.panel::-webkit-scrollbar{width:6px}
+.panel::-webkit-scrollbar-thumb{background:rgba(155,147,196,.35); border-radius:3px}
+.dock-toggle{
+  margin-left:auto; display:inline-flex; align-items:center; justify-content:center;
+  width:36px; height:36px; border-radius:10px; cursor:pointer;
+  border:1px solid var(--line); background:rgba(255,255,255,.03); color:var(--weak);
+  transition:color .15s, border-color .15s, background .15s;
+  flex-shrink:0;
+}
+.dock-toggle:hover{color:var(--cyan); border-color:rgba(67,232,216,.4); background:rgba(67,232,216,.08)}
+.dock-toggle[aria-pressed="true"]{color:var(--cyan); border-color:rgba(67,232,216,.45)}
+.dock-toggle svg{width:18px; height:18px; display:block}
+.dock-toggle .ico-show{display:none}
+.dock-toggle[aria-pressed="true"] .ico-hide{display:none}
+.dock-toggle[aria-pressed="true"] .ico-show{display:block}
+.dock-toggle:focus-visible{outline:2px solid var(--cyan); outline-offset:3px}
 .card-p{
   background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px;
 }
@@ -92,13 +135,28 @@ h2 .badge-inline{
 }
 .thumb.plus:hover{border-color:var(--cyan)}
 .thumb.plus:hover::before{color:var(--cyan); transform:scale(1.15)}
-.actions{display:flex; gap:10px}
+.actions{display:flex; gap:10px; margin-top:14px; padding-top:14px; border-top:1px dashed var(--line)}
+.card-p.tune .actions{margin-bottom:0}
+.actions-3 .act{flex:1; padding:10px 0; font-size:12px}
+.toggle-row{grid-template-columns:1fr auto; margin-top:4px}
+.toggle{
+  min-width:52px; padding:6px 12px; border-radius:8px; border:1px solid var(--line);
+  background:var(--panel2); color:var(--weak); font-size:12px; cursor:pointer;
+  font-family:'JetBrains Mono',monospace; letter-spacing:.06em;
+  transition:color .15s, border-color .15s, background .15s;
+}
+.toggle:hover{color:var(--cyan); border-color:rgba(67,232,216,.35)}
+.toggle[aria-pressed="true"]{
+  color:#0E0B21; border:none; background:var(--foil); font-weight:500;
+}
 /* M2 自动抠图条 */
 .matting{border-top:1px dashed var(--line); padding-top:12px}
 .matting-head{display:flex; align-items:center; gap:10px}
 .matting-head .glabel{margin-bottom:0}
+.matting-actions{flex:1; display:flex; gap:8px; min-width:0}
 .matting-btn{flex:1; padding:7px 0; font-size:12px}
 .matting-btn:disabled{opacity:.55; cursor:wait; transform:none}
+.matting-btn.more{flex:1}
 .mstatus{font-size:11px; color:var(--weak); margin-top:8px; letter-spacing:.04em}
 .mbar{margin-top:8px; height:4px; border-radius:2px; background:var(--panel2); overflow:hidden}
 .mbar i{display:block; height:100%; width:0; background:var(--foil); border-radius:2px; transition:width .2s}
@@ -135,13 +193,34 @@ h2 .badge-inline{
 }
 .thumb.plus.char-plus{position:relative; padding-bottom:14px}
 .thumb.plus.char-plus:hover::after{color:var(--cyan)}
-/* 拉框修补：抠完后出现；在独立 2D 画布上框选，避免对 3D 卡坐标映射 */
+/* 拉框/橡皮修补：抠完后出现；在独立 2D 画布上操作 */
 .mpatch{margin-top:12px; padding-top:12px; border-top:1px dashed var(--line)}
 .mpatch[hidden]{display:none!important}
-.mpatch-head{display:flex; align-items:center; gap:10px; margin-bottom:8px}
+.mpatch-head{display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap}
 .mpatch-head .glabel{margin-bottom:0}
-.mpatch-head .act{flex:1; padding:7px 0; font-size:12px}
+.mpatch-tools{display:flex; gap:4px}
+.mpatch-tools .tool{
+  padding:5px 10px; border-radius:8px; border:1px solid var(--line);
+  background:var(--panel2); color:var(--weak); font-size:11px; cursor:pointer;
+  font-family:'JetBrains Mono',monospace; letter-spacing:.06em;
+  transition:color .15s, border-color .15s, background .15s;
+}
+.mpatch-tools .tool:hover{color:var(--cyan); border-color:rgba(67,232,216,.35)}
+.mpatch-tools .tool.on{
+  color:#0E0B21; border:none; background:var(--foil); font-weight:500;
+}
+.mpatch-head .act{flex:1; min-width:64px; padding:7px 0; font-size:12px}
 .mpatch-head .act:disabled{opacity:.4; cursor:not-allowed; transform:none}
+.mpatch-brush{
+  display:grid; grid-template-columns:36px 1fr 36px; gap:8px; align-items:center;
+  margin-bottom:8px;
+}
+.mpatch-brush[hidden]{display:none!important}
+.mpatch-brush label{font-size:11px; color:var(--weak)}
+.mpatch-brush input[type="range"]{width:100%; accent-color:var(--cyan); cursor:pointer}
+.mpatch-brush output{
+  font-family:'JetBrains Mono',monospace; font-size:11px; text-align:right; color:var(--text);
+}
 .mpatch-stage{
   position:relative; margin-top:8px; border-radius:8px; overflow:hidden;
   border:1px solid var(--line); background:var(--panel2); touch-action:none;
@@ -151,6 +230,7 @@ h2 .badge-inline{
   display:block; width:100%; height:auto; max-height:280px; object-fit:contain;
   cursor:crosshair; vertical-align:top;
 }
+.mpatch-stage.erase canvas{cursor:none}
 .mpatch .mhint{margin:0}
 /* 微调面板行：label / 滑杆 / 数值 三栏对齐 */
 .row{
@@ -175,17 +255,22 @@ button.act:hover{border-color:var(--cyan); transform:translateY(-1px)}
 button.act.primary{
   background:var(--foil); border:none; color:#0E0B21; font-weight:500;
 }
-.stage{display:flex; flex-direction:column; align-items:center; gap:18px; padding:30px 0}
+main.dock-hidden .card{
+  width:min(440px, 56vw, calc((100dvh - 140px) / 1.4764));
+}
+.stage{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:18px; padding:12px; min-height:0; overflow:hidden; z-index:1;
+}
 .scene{perspective:1200px; touch-action:none}
 /* 卡面比例由 JS 按当前卡框不透明区域动态设置（默认黑魔导女孩 615:908），高度再受视口约束 */
 .card{
-  position:relative; width:min(400px, 86vw, calc(78svh / 1.4764)); aspect-ratio:615/908;
+  position:relative; width:min(400px, 48vw, calc((100dvh - 140px) / 1.4764)); aspect-ratio:615/908;
   transform-style:preserve-3d; will-change:transform; cursor:grab;
   touch-action:none; user-select:none;
 }
 .card:active{cursor:grabbing}
 .card:focus-visible{outline:2px solid var(--cyan); outline-offset:8px; border-radius:16px}
-@media (max-width:900px){.card{width:min(340px, 86vw)}}
 .inner{
   position:relative; width:100%; height:100%; transform-style:preserve-3d;
 }
@@ -204,9 +289,24 @@ button.act.primary{
 .face.back img{width:100%; height:100%; object-fit:cover; display:block; -webkit-user-drag:none}
 img{-webkit-user-drag:none}
 .foot{
-  margin-top:40px; text-align:center; color:var(--weak); font-size:12px;
-  letter-spacing:.1em; opacity:.85;
+  flex-shrink:0; margin-top:10px; padding:8px 0 4px; text-align:center;
+  color:var(--weak); font-size:11px; letter-spacing:.08em; opacity:.85;
 }
+/* 抠图模型本地库 */
+.mcache{
+  margin-top:12px; padding-top:12px; border-top:1px dashed var(--line);
+}
+.mcache[hidden]{display:none!important}
+.mcache-head{display:flex; align-items:center; gap:10px; margin-bottom:8px}
+.mcache-head .glabel{margin-bottom:0}
+.mcache-status{
+  flex:1; font-size:11px; color:var(--weak); letter-spacing:.04em;
+  font-family:'JetBrains Mono',monospace;
+}
+.mcache-status strong{color:var(--cyan); font-weight:500}
+.mcache-actions{display:flex; gap:8px}
+.mcache-actions .act{flex:1; padding:7px 0; font-size:12px}
+.mcache .mhint{margin-top:8px}
 .rise{opacity:0; transform:translateY(14px); animation:rise .6s forwards}
 .rise.d2{animation-delay:.1s}.rise.d3{animation-delay:.2s}
 @keyframes rise{to{opacity:1; transform:none}}
@@ -224,9 +324,20 @@ img{-webkit-user-drag:none}
     <a class="back" href="../index.html">&larr; 卡册</a>
     <h1>PLAY<em>GROUND</em></h1>
     <span class="badge">M2 · 自动抠图 · 实时合成</span>
+    <button class="dock-toggle" id="btnDock" type="button" aria-pressed="false" aria-label="隐藏工作栏" title="隐藏工作栏">
+      <svg class="ico-hide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <path d="M9 4v16" />
+        <path d="M5 8h2M5 12h2M5 16h2" />
+      </svg>
+      <svg class="ico-show" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <path d="M9 4v16" />
+      </svg>
+    </button>
   </header>
-  <main>
-    <aside class="panel rise d2">
+  <main id="pgMain">
+    <aside class="panel panel-left rise d2" id="panelLeft">
       <section class="card-p">
         <h2>01 · 素材 <span class="badge-inline">点 + 上传自定义</span></h2>
         <div class="preset-group">
@@ -241,7 +352,10 @@ img{-webkit-user-drag:none}
         <div class="matting" id="mattingBox" hidden>
           <div class="matting-head">
             <span class="glabel">抠图</span>
-            <button class="act matting-btn" id="btnMatting" type="button">自动抠图</button>
+            <div class="matting-actions">
+              <button class="act matting-btn" id="btnMatting" type="button">自动抠图</button>
+              <button class="act matting-btn more" id="btnMattingMore" type="button" hidden>继续自动扣</button>
+            </div>
           </div>
           <div class="mstatus" id="mattingStatus" hidden></div>
           <div class="mbar" id="mattingBar" hidden><i></i></div>
@@ -255,15 +369,24 @@ img{-webkit-user-drag:none}
             </button>
             <span class="mhint">点缩略图切换预览</span>
           </div>
-          <!-- 拉框修补：框内 alpha 清零，可撤销；模型不变 -->
+          <!-- 拉框 / 橡皮修补：清 alpha，可撤销 -->
           <div class="mpatch" id="mattingPatch" hidden>
             <div class="mpatch-head">
               <span class="glabel">修补</span>
+              <div class="mpatch-tools" role="group" aria-label="修补工具">
+                <button class="tool on" id="btnPatchRect" type="button" aria-pressed="true">拉框</button>
+                <button class="tool" id="btnPatchErase" type="button" aria-pressed="false">橡皮</button>
+              </div>
               <button class="act" id="btnPatchUndo" type="button" disabled>撤销</button>
             </div>
-            <p class="mhint">在下方拉框标记要抠掉的区域 · 可多次 · Esc 取消当前框</p>
+            <div class="mpatch-brush" id="patchBrushRow" hidden>
+              <label for="sPatchBrush">大小</label>
+              <input type="range" id="sPatchBrush" min="6" max="80" step="1" value="24">
+              <output for="sPatchBrush">24</output>
+            </div>
+            <p class="mhint" id="patchHint">拉框标记要抠掉的区域 · 可多次 · Esc 取消</p>
             <div class="mpatch-stage" id="patchStage">
-              <canvas id="patchCanvas" aria-label="拉框修补画布"></canvas>
+              <canvas id="patchCanvas" aria-label="修补画布"></canvas>
             </div>
           </div>
         </div>
@@ -275,22 +398,19 @@ img{-webkit-user-drag:none}
           <div class="glabel">卡背</div>
           <div class="thumb-row" id="rowBack"></div>
         </div>
+        <!-- 工程包：导出当前微调设置 + 四层素材（含抠好的角色），便于分享续做 -->
+        <div class="mcache" id="workspaceIO">
+          <div class="mcache-head">
+            <span class="glabel">工程</span>
+            <span class="mcache-status" id="wsStatus">设置 + 图层</span>
+          </div>
+          <div class="mcache-actions">
+            <button class="act" id="btnWsImport" type="button">导入</button>
+            <button class="act" id="btnWsExport" type="button">导出</button>
+          </div>
+          <input type="file" id="fileWs" accept="application/json,.json" hidden>
+        </div>
         <input type="file" id="fileAny" accept="image/png,image/jpeg,image/webp" hidden>
-      </section>
-      <section class="card-p">
-        <h2>02 · 微调</h2>
-        <div class="row"><label>角色缩放</label><input type="range" id="sCharScale" min="0.4" max="2.2" step="0.01" value="1"><output>1.00</output></div>
-        <div class="row"><label>角色横移</label><input type="range" id="sCharX" min="-60" max="60" step="1" value="0"><output>0</output></div>
-        <div class="row"><label>角色纵移</label><input type="range" id="sCharY" min="-60" max="60" step="1" value="0"><output>0</output></div>
-        <div class="row"><label>背景缩放</label><input type="range" id="sBgScale" min="1" max="2" step="0.01" value="1"><output>1.00</output></div>
-        <div class="row"><label>卡框缩放</label><input type="range" id="sFrameScale" min="0.7" max="1.8" step="0.01" value="1"><output>1.00</output></div>
-        <div class="row"><label>卡框横移</label><input type="range" id="sFrameX" min="-60" max="60" step="1" value="0"><output>0</output></div>
-        <div class="row"><label>卡框纵移</label><input type="range" id="sFrameY" min="-60" max="60" step="1" value="0"><output>0</output></div>
-        <div class="row"><label>全息强度</label><input type="range" id="sFoil" min="0" max="1" step="0.01" value="0.55"><output>0.55</output></div>
-      </section>
-      <section class="card-p actions">
-        <button class="act primary" id="btnFlip">翻面</button>
-        <button class="act" id="btnReset">重置微调</button>
       </section>
     </aside>
     <section class="stage rise d3">
@@ -303,8 +423,30 @@ img{-webkit-user-drag:none}
         </div>
       </div>
     </section>
+    <aside class="panel panel-right rise d2" id="panelRight">
+      <section class="card-p tune">
+        <h2>02 · 微调</h2>
+        <div class="row"><label>角色缩放</label><input type="range" id="sCharScale" min="0.4" max="2.2" step="0.01" value="1"><output>1.00</output></div>
+        <div class="row"><label>角色横移</label><input type="range" id="sCharX" min="-60" max="60" step="1" value="0"><output>0</output></div>
+        <div class="row"><label>角色纵移</label><input type="range" id="sCharY" min="-60" max="60" step="1" value="0"><output>0</output></div>
+        <div class="row"><label>背景缩放</label><input type="range" id="sBgScale" min="1" max="2" step="0.01" value="1"><output>1.00</output></div>
+        <div class="row"><label>卡框缩放</label><input type="range" id="sFrameScale" min="0.7" max="1.8" step="0.01" value="1"><output>1.00</output></div>
+        <div class="row"><label>卡框横移</label><input type="range" id="sFrameX" min="-60" max="60" step="1" value="0"><output>0</output></div>
+        <div class="row"><label>卡框纵移</label><input type="range" id="sFrameY" min="-60" max="60" step="1" value="0"><output>0</output></div>
+        <div class="row"><label>全息强度</label><input type="range" id="sFoil" min="0" max="1" step="0.01" value="0.55"><output>0.55</output></div>
+        <div class="row toggle-row">
+          <label for="btnHoldPose">悬停保持</label>
+          <button type="button" class="toggle" id="btnHoldPose" aria-pressed="false">关</button>
+        </div>
+        <div class="actions actions-3">
+          <button class="act primary" id="btnFlip">翻面</button>
+          <button class="act" id="btnSpin">自动旋转</button>
+          <button class="act" id="btnReset">重置微调</button>
+        </div>
+      </section>
+    </aside>
   </main>
-  <footer class="foot">所有数据仅在你的浏览器本地处理 · 不会上传到任何服务器 · 个人 Demo 非官方 · 抠图模型 RMBG-1.4 仅限非商用</footer>
+  <footer class="foot">所有数据仅在你的浏览器本地处理 · 工程可导出分享续做 · 个人 Demo 非官方 · RMBG-1.4 仅限非商用</footer>
 </div>
 <script src="renderer.js"></script>
 <script src="matting.js"></script>

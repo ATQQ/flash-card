@@ -83,8 +83,17 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 16px;
     padding: 30px 0 0;
   }
+  .nav-left,
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+  .nav-left { flex: 1; }
   .logo {
     display: flex;
     align-items: center;
@@ -105,6 +114,7 @@
     place-items: center;
     color: #14092b;
     font-size: 17px;
+    flex-shrink: 0;
   }
   .logo small {
     font-family: "JetBrains Mono", monospace;
@@ -115,6 +125,40 @@
     line-height: 1;
     margin-top: 3px;
   }
+  .nav-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-decoration: none;
+    color: var(--muted);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.02);
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    white-space: nowrap;
+  }
+  .nav-pill svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+  .nav-pill:hover {
+    color: var(--cyan);
+    border-color: rgba(67, 232, 216, 0.35);
+    background: rgba(67, 232, 216, 0.06);
+  }
+  .nav-pill.playground {
+    color: var(--cyan);
+    border-color: rgba(67, 232, 216, 0.28);
+  }
+  .nav-pill.playground:hover {
+    border-color: rgba(67, 232, 216, 0.5);
+    background: rgba(67, 232, 216, 0.1);
+  }
   .nav-badge {
     font-family: "JetBrains Mono", monospace;
     font-size: 11px;
@@ -124,6 +168,7 @@
     border-radius: 999px;
     padding: 8px 16px;
     background: rgba(255, 255, 255, 0.02);
+    white-space: nowrap;
   }
   .nav-badge b { color: var(--cyan); font-weight: 500; }
 
@@ -543,9 +588,17 @@
     .hero { grid-template-columns: 1fr; gap: 60px; padding: 70px 0 90px; }
     .hero-card-zone { order: -1; }
   }
+  @media (max-width: 720px) {
+    header { flex-wrap: wrap; }
+    .nav-left { width: 100%; order: 1; }
+    .nav-right { width: 100%; order: 2; justify-content: flex-start; flex-wrap: wrap; }
+    .nav-badge { display: none; }
+  }
   @media (max-width: 620px) {
     .hero-meta { gap: 26px; }
     footer { flex-direction: column; }
+    .logo { font-size: 18px; }
+    .nav-pill span.hide-sm { display: none; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -567,13 +620,31 @@
 
 <div class="wrap">
   <header class="rise d1">
-    <a class="logo" href="./">
-      <span class="logo-chip" aria-hidden="true">卡</span>
-      <span>闪卡实验场
-        <small>FLASH·CARD·DEMOS</small>
-      </span>
-    </a>
-    <span class="nav-badge">DEMO 收录 <b id="count-badge">0</b> / 持续上新</span>
+    <div class="nav-left">
+      <a class="logo" href="./">
+        <span class="logo-chip" aria-hidden="true">卡</span>
+        <span>闪卡实验场
+          <small>FLASH·CARD·DEMOS</small>
+        </span>
+      </a>
+      <a class="nav-pill playground" href="./playground/" aria-label="进入 PlayGround 闪卡工作台">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z" />
+          <path d="M19 3v4" />
+          <path d="M17 5h4" />
+        </svg>
+        <span>PLAYGROUND</span>
+      </a>
+    </div>
+    <div class="nav-right">
+      <a class="nav-pill" href="https://github.com/ATQQ/flash-card" target="_blank" rel="noopener noreferrer" aria-label="在 GitHub 打开本仓库">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2C6.477 2 2 6.586 2 12.253c0 4.537 2.865 8.374 6.839 9.726.5.094.683-.223.683-.496 0-.245-.009-.894-.014-1.754-2.782.618-3.369-1.38-3.369-1.38-.455-1.182-1.11-1.497-1.11-1.497-.908-.635.069-.622.069-.622 1.003.072 1.532 1.055 1.532 1.055.892 1.566 2.341 1.114 2.91.852.091-.662.35-1.114.636-1.37-2.22-.259-4.555-1.14-4.555-5.077 0-1.122.39-2.04 1.029-2.76-.103-.26-.446-1.302.098-2.714 0 0 .84-.276 2.75 1.055A9.338 9.338 0 0 1 12 6.844c.85.004 1.705.118 2.504.346 1.909-1.331 2.747-1.055 2.747-1.055.546 1.412.203 2.454.1 2.714.64.72 1.028 1.638 1.028 2.76 0 3.947-2.338 4.814-4.566 5.068.359.317.679.943.679 1.901 0 1.371-.012 2.477-.012 2.813 0 .276.18.596.688.495C19.138 20.623 22 16.787 22 12.253 22 6.586 17.523 2 12 2z" />
+        </svg>
+        <span class="hide-sm">GitHub</span>
+      </a>
+      <span class="nav-badge">DEMO 收录 <b id="count-badge">0</b> / 持续上新</span>
+    </div>
   </header>
 
   <section class="hero">
@@ -683,15 +754,15 @@
         </div>
       </a>
 
-      <a class="mini-card rise d3" href="./holo-card/magician-combo/index.html">
+      <a class="mini-card rise d3" href="./holo-card/lux/index.html">
         <div class="mini-frame">
-          <img src="./holo-card/magician-combo/source.webp" alt="魔术师的配合 3D 全息闪卡" loading="lazy" />
+          <img src="./holo-card/lux/source.webp" alt="大元素使拉克丝全息闪卡" loading="lazy" />
           <span class="mini-sheen" aria-hidden="true"></span>
         </div>
         <div class="mini-label">
           <span class="mini-no">NO.004</span>
-          <span class="mini-name">魔术师的配合</span>
-          <span class="mini-tag">3D</span>
+          <span class="mini-name">大元素使拉克丝</span>
+          <span class="mini-tag">HOLO</span>
         </div>
       </a>
 
@@ -707,15 +778,15 @@
         </div>
       </a>
 
-      <a class="mini-card rise d3" href="./holo-card/lux/index.html">
+      <a class="mini-card rise d3" href="./holo-card/magician-combo/index.html">
         <div class="mini-frame">
-          <img src="./holo-card/lux/source.webp" alt="大元素使拉克丝全息闪卡" loading="lazy" />
+          <img src="./holo-card/magician-combo/source.webp" alt="魔术师的配合 3D 全息闪卡" loading="lazy" />
           <span class="mini-sheen" aria-hidden="true"></span>
         </div>
         <div class="mini-label">
           <span class="mini-no">NO.006</span>
-          <span class="mini-name">大元素使拉克丝</span>
-          <span class="mini-tag">HOLO</span>
+          <span class="mini-name">魔术师的配合</span>
+          <span class="mini-tag">3D</span>
         </div>
       </a>
     </div>
@@ -770,10 +841,10 @@
       rect: [0.50391, 0.50642, 0.46953, 0.47859]
     },
     {
-      no: "NO.004", name: "魔术师的配合 · 全息卡", en: "MAGICIAN COMBO",
-      dir: "./holo-card/magician-combo/assets", url: "./holo-card/magician-combo/index.html",
-      files: ["background.webp", "subject.webp", "text.webp"],
-      rect: [0.49854, 0.49967, 0.43018, 0.46777]
+      no: "NO.004", name: "大元素使拉克丝 · 全息卡", en: "ELEMENTALIST LUX",
+      dir: "./holo-card/lux/job/assets", url: "./holo-card/lux/index.html",
+      files: ["background.webp", "character.webp", "ui.webp"],
+      rect: [0.5, 0.5, 0.5, 0.5]
     },
     {
       no: "NO.005", name: "龙骑士黑魔术少女 · 全息卡", en: "DRAGON KNIGHT DMG",
@@ -782,10 +853,10 @@
       rect: [0.5, 0.5, 0.5, 0.5]
     },
     {
-      no: "NO.006", name: "大元素使拉克丝 · 全息卡", en: "ELEMENTALIST LUX",
-      dir: "./holo-card/lux/job/assets", url: "./holo-card/lux/index.html",
-      files: ["background.webp", "character.webp", "ui.webp"],
-      rect: [0.5, 0.5, 0.5, 0.5]
+      no: "NO.006", name: "魔术师的配合 · 全息卡", en: "MAGICIAN COMBO",
+      dir: "./holo-card/magician-combo/assets", url: "./holo-card/magician-combo/index.html",
+      files: ["background.webp", "subject.webp", "text.webp"],
+      rect: [0.49854, 0.49967, 0.43018, 0.46777]
     }
   ];
   const pickedFiles = (card) => card.files ?? ["background.webp", "character.webp", "ui.webp"];

@@ -6,15 +6,18 @@ window.PLAYGROUND_PRESETS = {
     { id: "metalgreymon", name: "机械暴龙兽", src: "backgrounds/metalgreymon.webp" },
     { id: "tailmon", name: "迪路兽", src: "backgrounds/tailmon.webp" },
     { id: "darkmagiciangirl-dragonknight", name: "龙骑士", src: "backgrounds/darkmagiciangirl-dragonknight.webp" },
+    { id: "lux", name: "拉克丝", src: "backgrounds/lux.webp" },
   ],
   characters: [
     { id: "darkmagiciangirl", name: "黑魔导女孩", src: "characters/darkmagiciangirl.webp" },
     { id: "metalgreymon", name: "机械暴龙兽", src: "characters/metalgreymon.webp" },
     { id: "tailmon", name: "迪路兽", src: "characters/tailmon.webp" },
     { id: "darkmagiciangirl-dragonknight", name: "龙骑士", src: "characters/darkmagiciangirl-dragonknight.webp" },
+    { id: "lux", name: "拉克丝", src: "characters/lux.webp" },
   ],
   backs: [
     { id: "back-classic", name: "经典", src: "backs/back-classic.webp" },
     { id: "back-mgreymon", name: "暴龙兽", src: "backs/back-mgreymon.webp" },
+    { id: "back-lux", name: "拉克丝", src: "backs/back-lux.webp" },
   ],
 };

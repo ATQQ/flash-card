@@ -8,5 +8,6 @@ window.PLAYGROUND_FRAMES = {
     { id: "darkmagiciangirl", name: "黑魔导女孩", frame: "darkmagiciangirl/ui.webp", back: "darkmagiciangirl/back.webp" },
     { id: "metalgreymon", name: "机械暴龙兽", frame: "metalgreymon/ui.webp" },
     { id: "tailmon", name: "迪路兽", frame: "tailmon/ui.webp" },
+    { id: "lux", name: "拉克丝", frame: "lux/ui.webp", back: "lux/back.webp" },
   ],
 };
