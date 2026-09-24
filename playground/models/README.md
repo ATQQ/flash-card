@@ -23,7 +23,7 @@ curl -L -o config.json "https://huggingface.co/briaai/RMBG-1.4/resolve/main/conf
 curl -L -o preprocessor_config.json "https://huggingface.co/briaai/RMBG-1.4/resolve/main/preprocessor_config.json"
 ```
 
-权重不入 git（见 .gitignore）。后续主子找到模型 CDN 链接后，替换 `matting-worker.js`
+权重不入 git（见 .gitignore）。若改走 CDN，替换 `matting-worker.js`
 里的 `env.allowRemoteModels = false` 与 `localModelPath` 逻辑即可。
 
 `../vendor/`（transformers.js + onnxruntime wasm，~22MB）**随仓库走、可入 git**，

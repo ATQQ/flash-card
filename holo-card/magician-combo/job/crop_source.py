@@ -1,8 +1,11 @@
 """Crop renders/hero.png down to the card face -> source.png."""
+from pathlib import Path
+
 from PIL import Image
 
-SRC = "/Users/sugar/Documents/fe/flash-card-demos/holo-card/magician-combo/renders/hero.png"
-DST = "/Users/sugar/Documents/fe/flash-card-demos/holo-card/magician-combo/source.png"
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "renders" / "hero.png"
+DST = ROOT / "source.png"
 
 img = Image.open(SRC).convert("RGB")
 w, h = img.size

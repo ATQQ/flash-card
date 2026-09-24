@@ -513,12 +513,20 @@
     padding: 34px 0 44px;
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 16px;
     font-family: "JetBrains Mono", monospace;
     font-size: 11px;
     letter-spacing: 0.12em;
     color: var(--muted);
   }
+  footer .legal {
+    flex: 1 1 100%;
+    margin: 0;
+    letter-spacing: 0.06em;
+    line-height: 1.7;
+  }
+  footer .legal a { color: var(--muted); }
 
   /* ---------- 入场编排 ---------- */
   .rise {
@@ -550,6 +558,9 @@
     .rise { opacity: 1; transform: none; }
   }
 </style>
+<script>
+!function(p){"use strict";!function(t){var s=window,e=document,i=p,c="".concat("https:"===e.location.protocol?"https://":"http://","sdk.51.la/js-sdk-pro.min.js"),n=e.createElement("script"),r=e.getElementsByTagName("script")[0];n.type="text/javascript",n.setAttribute("charset","UTF-8"),n.async=!0,n.src=c,n.id="LA_COLLECT",i.d=n;var o=function(){s.LA.ids.push(i)};s.LA?s.LA.ids&&o():(s.LA=p,s.LA.ids=[],o()),r.parentNode.insertBefore(n,r)}()}({id:"LKSDtM0ubyn8LY8Q",ck:"LKSDtM0ubyn8LY8Q"});
+</script>
 </head>
 <body>
 <div class="aurora" aria-hidden="true"></div>
@@ -701,6 +712,7 @@
   <footer>
     <span>FLASH CARD DEMOS — 一个不断翻面的仓库</span>
     <span>卡 = 知识的最小封装单位</span>
+    <p class="legal">个人学习 Demo · 非官方 · 角色与卡面版权归原权利人。代码 MIT，详见 <a href="./README.md">README</a>。</p>
   </footer>
 </div>
 

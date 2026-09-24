@@ -102,16 +102,56 @@ h2 .badge-inline{
 .mstatus{font-size:11px; color:var(--weak); margin-top:8px; letter-spacing:.04em}
 .mbar{margin-top:8px; height:4px; border-radius:2px; background:var(--panel2); overflow:hidden}
 .mbar i{display:block; height:100%; width:0; background:var(--foil); border-radius:2px; transition:width .2s}
+/* 抠前/抠后对照：仅抠图成功后展示；[hidden] 必须压过 display:flex */
 .mcheck{display:flex; align-items:center; gap:10px; margin-top:10px; flex-wrap:wrap}
-.mcheck figure{margin:0; text-align:center}
-.mcheck img{
-  width:52px; height:70px; object-fit:cover; display:block; border-radius:6px;
-  border:1px solid var(--line);
+.mcheck[hidden]{display:none!important}
+.mver{
+  margin:0; padding:0; border:none; background:transparent; cursor:pointer;
+  text-align:center; font:inherit; color:inherit;
 }
-#chkBlack{background:#000}
-#chkWhite{background:#fff}
-.mcheck figcaption{font-size:9px; color:var(--weak); margin-top:3px; font-family:'JetBrains Mono',monospace}
+.mver img{
+  width:52px; height:70px; object-fit:cover; display:block; border-radius:6px;
+  border:1px solid var(--line); background:var(--panel2);
+  transition:border-color .15s, box-shadow .15s;
+}
+.mver.on img{
+  border-color:var(--cyan);
+  box-shadow:0 0 0 1px var(--cyan);
+}
+.mver .cap{
+  display:block; font-size:9px; color:var(--weak); margin-top:3px;
+  font-family:'JetBrains Mono',monospace;
+}
+.mver.on .cap{color:var(--cyan)}
 .mhint{font-size:10px; color:var(--weak); opacity:.8}
+.glabel-hint{
+  margin-left:6px; font-size:10px; font-weight:400; letter-spacing:.04em;
+  color:var(--cyan); opacity:.85; font-family:'JetBrains Mono',monospace;
+}
+.thumb.plus.char-plus::after{
+  content:"抠图"; position:absolute; bottom:4px; left:0; right:0;
+  font-size:9px; letter-spacing:.06em; color:var(--weak);
+  font-family:'JetBrains Mono',monospace; text-align:center; line-height:1;
+}
+.thumb.plus.char-plus{position:relative; padding-bottom:14px}
+.thumb.plus.char-plus:hover::after{color:var(--cyan)}
+/* 拉框修补：抠完后出现；在独立 2D 画布上框选，避免对 3D 卡坐标映射 */
+.mpatch{margin-top:12px; padding-top:12px; border-top:1px dashed var(--line)}
+.mpatch[hidden]{display:none!important}
+.mpatch-head{display:flex; align-items:center; gap:10px; margin-bottom:8px}
+.mpatch-head .glabel{margin-bottom:0}
+.mpatch-head .act{flex:1; padding:7px 0; font-size:12px}
+.mpatch-head .act:disabled{opacity:.4; cursor:not-allowed; transform:none}
+.mpatch-stage{
+  position:relative; margin-top:8px; border-radius:8px; overflow:hidden;
+  border:1px solid var(--line); background:var(--panel2); touch-action:none;
+  max-width:100%;
+}
+.mpatch-stage canvas{
+  display:block; width:100%; height:auto; max-height:280px; object-fit:contain;
+  cursor:crosshair; vertical-align:top;
+}
+.mpatch .mhint{margin:0}
 /* 微调面板行：label / 滑杆 / 数值 三栏对齐 */
 .row{
   display:grid; grid-template-columns:60px 1fr 44px; gap:10px;
@@ -174,6 +214,9 @@ img{-webkit-user-drag:none}
   *{animation:none!important; transition:none!important}
 }
 </style>
+<script>
+!function(p){"use strict";!function(t){var s=window,e=document,i=p,c="".concat("https:"===e.location.protocol?"https://":"http://","sdk.51.la/js-sdk-pro.min.js"),n=e.createElement("script"),r=e.getElementsByTagName("script")[0];n.type="text/javascript",n.setAttribute("charset","UTF-8"),n.async=!0,n.src=c,n.id="LA_COLLECT",i.d=n;var o=function(){s.LA.ids.push(i)};s.LA?s.LA.ids&&o():(s.LA=p,s.LA.ids=[],o()),r.parentNode.insertBefore(n,r)}()}({id:"LKSDtM0ubyn8LY8Q",ck:"LKSDtM0ubyn8LY8Q"});
+</script>
 </head>
 <body>
 <div class="wrap">
@@ -191,7 +234,7 @@ img{-webkit-user-drag:none}
           <div class="thumb-row" id="rowBg"></div>
         </div>
         <div class="preset-group">
-          <div class="glabel">角色</div>
+          <div class="glabel">角色 <span class="glabel-hint" id="charMattHint" hidden>支持自动抠图</span></div>
           <div class="thumb-row" id="rowChar"></div>
         </div>
         <!-- M2 自动抠图：上传不透明角色图时出现，一键去背景；file:// 下隐藏 -->
@@ -202,10 +245,26 @@ img{-webkit-user-drag:none}
           </div>
           <div class="mstatus" id="mattingStatus" hidden></div>
           <div class="mbar" id="mattingBar" hidden><i></i></div>
+          <!-- 抠完才出现：点缩略图在抠前/抠后间自由切换 -->
           <div class="mcheck" id="mattingCheck" hidden>
-            <figure><img id="chkBlack" alt="黑底自查"><figcaption>黑底</figcaption></figure>
-            <figure><img id="chkWhite" alt="白底自查"><figcaption>白底</figcaption></figure>
-            <span class="mhint">残留可点「还原」切回原图</span>
+            <button type="button" class="mver" id="chkOrig" aria-pressed="false">
+              <img id="chkOrigImg" alt="抠前原图"><span class="cap">抠前</span>
+            </button>
+            <button type="button" class="mver on" id="chkMatt" aria-pressed="true">
+              <img id="chkMattImg" alt="抠后"><span class="cap">抠后</span>
+            </button>
+            <span class="mhint">点缩略图切换预览</span>
+          </div>
+          <!-- 拉框修补：框内 alpha 清零，可撤销；模型不变 -->
+          <div class="mpatch" id="mattingPatch" hidden>
+            <div class="mpatch-head">
+              <span class="glabel">修补</span>
+              <button class="act" id="btnPatchUndo" type="button" disabled>撤销</button>
+            </div>
+            <p class="mhint">在下方拉框标记要抠掉的区域 · 可多次 · Esc 取消当前框</p>
+            <div class="mpatch-stage" id="patchStage">
+              <canvas id="patchCanvas" aria-label="拉框修补画布"></canvas>
+            </div>
           </div>
         </div>
         <div class="preset-group">
@@ -245,7 +304,7 @@ img{-webkit-user-drag:none}
       </div>
     </section>
   </main>
-  <footer class="foot">所有数据仅在你的浏览器本地处理 · 不会上传到任何服务器</footer>
+  <footer class="foot">所有数据仅在你的浏览器本地处理 · 不会上传到任何服务器 · 个人 Demo 非官方 · 抠图模型 RMBG-1.4 仅限非商用</footer>
 </div>
 <script src="renderer.js"></script>
 <script src="matting.js"></script>

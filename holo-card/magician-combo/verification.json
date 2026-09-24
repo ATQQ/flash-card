@@ -2,7 +2,7 @@
   "blender": "4.5.14 LTS",
   "language": "zh_HANS",
   "interface_translation": true,
-  "config": "/Users/sugar/Documents/fe/flash-card-demos/holo-card/magician-combo/tools/blender-config",
+  "config": "tools/blender-config",
   "render_engine": "CYCLES",
   "device": "CPU",
   "images": {

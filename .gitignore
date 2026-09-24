@@ -7,7 +7,10 @@ holo-card/*/web/node_modules/
 holo-card/*/job/web/node_modules/
 *.log
 
-# 备份文件
+# 备份与本地目录
 *.bak
 .workbuddy
 .DS_Store
+.claude/
+__pycache__/
+*.pyc
