@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>机械暴龙兽 · 全息闪卡 — 闪卡实验场</title>
-<meta name="description" content="用 Holo Card 工具把一张机械暴龙兽插画拆成四层，重建为可拖拽旋转的全息闪卡。" />
+<title>大元素使拉克丝 · 全息闪卡 — 闪卡实验场</title>
+<meta name="description" content="用 Holo Card 工具把大元素使拉克丝插画拆成四层，重建为可拖拽旋转的全息闪卡。" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;800&family=ZCOOL+QingKe+HuangYou&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
@@ -301,6 +301,39 @@
   .recipe-box a:hover { border-bottom-style: solid; }
 
   .prompt-box .r-label { color: var(--pink); }
+  .prompt-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: start;
+  }
+  .ref-fig {
+    width: 128px;
+    text-decoration: none;
+    display: block;
+  }
+  .ref-fig img {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    display: block;
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .ref-fig:hover img { transform: translateY(-4px); border-color: var(--pink); }
+  .ref-fig span {
+    display: block;
+    margin-top: 8px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+  @media (max-width: 620px) {
+    .prompt-row { grid-template-columns: 1fr; }
+    .ref-fig { width: 108px; }
+  }
   .prompt-text {
     font-family: "JetBrains Mono", monospace;
     font-size: 13.5px;
@@ -353,9 +386,6 @@
     .rise { opacity: 1; transform: none; }
   }
 </style>
-<script>
-!function(p){"use strict";!function(t){var s=window,e=document,i=p,c="".concat("https:"===e.location.protocol?"https://":"http://","sdk.51.la/js-sdk-pro.min.js"),n=e.createElement("script"),r=e.getElementsByTagName("script")[0];n.type="text/javascript",n.setAttribute("charset","UTF-8"),n.async=!0,n.src=c,n.id="LA_COLLECT",i.d=n;var o=function(){s.LA.ids.push(i)};s.LA?s.LA.ids&&o():(s.LA=p,s.LA.ids=[],o()),r.parentNode.insertBefore(n,r)}()}({id:"LKSDtM0ubyn8LY8Q",ck:"LKSDtM0ubyn8LY8Q"});
-</script>
 </head>
 <body>
 <div class="aurora" aria-hidden="true"></div>
@@ -363,24 +393,24 @@
 <div class="wrap">
   <header class="rise d1">
     <a class="crumb" href="../../index.html">返回 闪卡实验场</a>
-    <span class="demo-badge">DEMO Nº001 · LIVE</span>
+    <span class="demo-badge">DEMO Nº006 · LIVE</span>
   </header>
 
   <section class="hero">
-    <p class="eyebrow rise d1">Holo Card · Metal Greymon</p>
-    <h1 class="rise d2">机械暴龙兽<br /><span class="foil-text">全息闪卡</span></h1>
+    <p class="eyebrow rise d1">Holo Card · Elementalist Lux</p>
+    <h1 class="rise d2">大元素使拉克丝<br /><span class="foil-text">全息闪卡</span></h1>
     <p class="lead rise d3">
-      一张真正的「闪」卡：把原版插画拆解为四层画面，再在 Canvas 上以视差深度重新装配。
-      拖拽它，光会从卡面上流过去——就像小时候捏在手里、对着太阳看的那种全息卡。
+      光元素形态的拉克丝，站在玫瑰彩色玻璃花窗前。把原画拆解为角色、花窗背景、结构线三层，
+      拖动它，金色法杖上的光会跟着视角流动——翻面是深紫底金色英雄联盟徽记。
     </p>
 
     <div class="stage rise d3">
       <div class="stage-inner">
-        <iframe src="./job/index.html" title="机械暴龙兽全息闪卡 · 实机预览" loading="lazy"></iframe>
+        <iframe src="./job/index.html" title="大元素使拉克丝全息闪卡 · 实机预览" loading="lazy"></iframe>
       </div>
     </div>
     <div class="stage-note rise d3">
-      <span class="hint">▲ 卡片可以直接拖拽旋转 · 下方滑杆调节光效强度</span>
+      <span class="hint">▲ 卡片可以直接拖拽旋转 · 点击翻面看 LOL 卡背</span>
       <a class="btn btn-foil" href="./job/index.html" target="_blank" rel="noopener">全屏体验 →</a>
     </div>
   </section>
@@ -393,18 +423,27 @@
     <div class="recipe">
       <div class="recipe-box">
         <span class="r-label">GENERATOR</span>
-        <h3>技能 · Holo Card</h3>
+        <h3>技能 · Holo Card Lite</h3>
         <p>
-          整张卡由 Agent Skill
-          <a href="https://github.com/LerSent001/holo-card" target="_blank" rel="noopener">Holo Card</a>
-          生成与装配：给它一张插画，它负责拆层、抠图、定深度、上 Canvas，产出一张可交互的全息卡。
+          整张卡由本仓库 fork 的 Agent Skill
+          <a href="../../SKILLS/holo-card-lite/SKILL.md">Holo Card Lite</a>
+          （源自 <a href="https://github.com/LerSent001/holo-card" target="_blank" rel="noopener">holo-card</a>）生成：
+          默认输出引用 <span class="hl">assets/</span> 的轻量 HTML，原图裁切为竖版后拆层、抠图、定深度、上 Canvas。
           完整过程记录保留在 <span class="hl">job/</span> 目录（task.json、prompts.json、provenance.json）。
         </p>
       </div>
       <div class="recipe-box prompt-box">
-        <span class="r-label">PROMPT</span>
-        <p class="prompt-text">/Holo Card 给我做一张数码宝贝机械暴龙兽的闪卡</p>
-        <p class="p-note">就是这一句——一句话进，一张全息卡出。</p>
+        <span class="r-label">PROMPT + REFERENCE</span>
+        <div class="prompt-row">
+          <div class="prompt-col">
+            <p class="prompt-text">做一张 LOL 的卡片，大元素使拉克丝，正面用原画，背面用英雄联盟 logo</p>
+            <p class="p-note">正面原图居中裁切放大；卡背单独生成深紫金徽记，装配进 <span class="hl">job/back.webp</span>。</p>
+          </div>
+          <a class="ref-fig lb" href="./source.webp" data-caption="REFERENCE — 正面原画">
+            <img src="./source.webp" alt="参考图：大元素使拉克丝原画" loading="lazy" />
+            <span>REFERENCE · 点击看大图</span>
+          </a>
+        </div>
       </div>
     </div>
   </section>
@@ -417,23 +456,23 @@
     <div class="steps">
       <div class="step">
         <span class="s-num">01</span>
-        <h3>拆层</h3>
-        <p>用 Holo Card 把一张完整插画拆成角色、场景、UI 框架、结构线四个独立图层，各自重建被遮挡的画面。</p>
+        <h3>裁切构图</h3>
+        <p>横版原画居中裁切放大为竖版 2:3，角色像素不动，保留光元素形态的全部细节。</p>
       </div>
       <div class="step">
         <span class="s-num">02</span>
-        <h3>抠图</h3>
-        <p>角色与 UI 层用独立的 alpha 蒙版抠出，逐张做黑白底对照审查，清掉边缘污染和棋盘格残留。</p>
+        <h3>拆层</h3>
+        <p>角色层抠出拉克丝，背景层重建被遮挡的玫瑰彩色玻璃花窗，UI 层因无卡框而留空。</p>
       </div>
       <div class="step">
         <span class="s-num">03</span>
         <h3>定深度</h3>
-        <p>从角色轮廓生成结构线蒙版，作为各层的前后深度依据——暴龙兽的躯干比背景近，比 UI 文字远。</p>
+        <p>从角色轮廓生成白色结构线，作为辉光蒙版——光会沿着法杖、发丝和裙摆边缘流动。</p>
       </div>
       <div class="step">
         <span class="s-num">04</span>
         <h3>合成</h3>
-        <p>Canvas 上按深度装配四层，指针与姿态驱动视差和光效，得到一张可以拿在手里转的卡。</p>
+        <p>三层按视差深度装配，卡背替换为深紫底金色英雄联盟徽记，翻面即见。</p>
       </div>
     </div>
   </section>
@@ -445,20 +484,20 @@
     </div>
     <div class="layers">
       <a class="layer" href="./source.webp" target="_blank" rel="noopener">
-        <figure><img src="./source.webp" alt="原始插画：机械暴龙兽卡牌原图" loading="lazy" /></figure>
-        <figcaption><span class="l-name">SOURCE</span><span class="l-desc">原始插画</span></figcaption>
+        <figure><img src="./source.webp" alt="原始插画：大元素使拉克丝卡面" loading="lazy" /></figure>
+        <figcaption><span class="l-name">SOURCE</span><span class="l-desc">原始卡面</span></figcaption>
       </a>
       <a class="layer" href="./character.webp" target="_blank" rel="noopener">
-        <figure><img src="./character.webp" alt="角色层：机械暴龙兽本体" loading="lazy" /></figure>
+        <figure><img src="./character.webp" alt="角色层：光元素使拉克丝" loading="lazy" /></figure>
         <figcaption><span class="l-name">CHARACTER</span><span class="l-desc">角色 · 最近景</span></figcaption>
       </a>
       <a class="layer" href="./background.webp" target="_blank" rel="noopener">
-        <figure><img src="./background.webp" alt="场景层：废墟城市背景" loading="lazy" /></figure>
-        <figcaption><span class="l-name">BACKGROUND</span><span class="l-desc">场景 · 最远景</span></figcaption>
+        <figure><img src="./background.webp" alt="场景层：玫瑰彩色玻璃花窗" loading="lazy" /></figure>
+        <figcaption><span class="l-name">BACKGROUND</span><span class="l-desc">花窗 · 最远景</span></figcaption>
       </a>
-      <a class="layer" href="./ui.webp" target="_blank" rel="noopener">
-        <figure><img src="./ui.webp" alt="UI 层：卡框、文字与信息栏" loading="lazy" /></figure>
-        <figcaption><span class="l-name">UI</span><span class="l-desc">卡框与文字</span></figcaption>
+      <a class="layer" href="./back.webp" target="_blank" rel="noopener">
+        <figure><img src="./back.webp" alt="卡背：深紫底金色英雄联盟徽记" loading="lazy" /></figure>
+        <figcaption><span class="l-name">BACK</span><span class="l-desc">卡背徽记</span></figcaption>
       </a>
       <a class="layer" href="./structure.webp" target="_blank" rel="noopener">
         <figure><img src="./structure.webp" alt="结构线层：角色轮廓白线" loading="lazy" /></figure>
@@ -468,7 +507,7 @@
   </section>
 
   <footer>
-    <span>FLASH CARD DEMOS — DEMO Nº001</span>
+    <span>FLASH CARD DEMOS — DEMO Nº006</span>
     <span>卡 = 知识的最小封装单位</span>
   </footer>
 </div>

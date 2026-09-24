@@ -25,9 +25,13 @@ CDN 地址与上传说明见 [`playground/models/README.md`](./playground/models
 | `holo-card/<name>/` | 单卡介绍页 + 拆层图 |
 | `holo-card/<name>/job/` | 可交互活卡（引用 `assets/`，约 30KB） |
 | `playground/` | 自助合成工作台 |
-| `SKILLS/holo-card-lite/` | 生成用 SKILL（默认外部引用图片） |
-| `docs/playground-prd.md` | PlayGround 需求记录 |
+| `SKILLS/holo-card-lite/` | 生成用 SKILL（见下） |
+| `docs/playground-prd.md` | PlayGround PRD |
 | `AGENTS.md` | 接入新卡的仓库约定 |
+
+## Holo Card Lite（本仓库 fork）
+
+[`SKILLS/holo-card-lite/`](./SKILLS/holo-card-lite/) 是对 [LerSent001/holo-card](https://github.com/LerSent001/holo-card) 的轻量 fork：装配时默认把四层图和卡背写成相对路径（`assets/*.png`），HTML 约 30KB，避免原版 10MB+ base64 内联；需要单文件时再加 `--inline`。本仓库里如「大元素使拉克丝」即用该 SKILL 生成。
 
 ## 免责
 

@@ -55,3 +55,30 @@ curl -L -o preprocessor_config.json "https://huggingface.co/briaai/RMBG-1.4/reso
 ## 许可
 
 RMBG-1.4 为 Bria 非商用协议，仅供个人 / Demo。
+
+---
+
+## ort wasm（~21MB）同样可走 CDN
+
+改地址：`playground/matting-worker.js` 里的 `ORT_CDN`。
+
+本机文件：
+
+```
+playground/vendor/ort-wasm-simd-threaded.jsep.wasm
+playground/vendor/ort-wasm-simd-threaded.jsep.mjs   # 可选，开发保留即可
+```
+
+上传到（建议只传 wasm）：
+
+```
+https://cdn.upyun.sugarat.top/web-static/ort/ort-wasm-simd-threaded.jsep.wasm
+```
+
+对象存储路径：
+
+```
+ort/ort-wasm-simd-threaded.jsep.wasm
+```
+
+有本地 `vendor/*.wasm` 时优先本地；否则点抠图时再从 CDN 拉。部署包不再带 wasm。

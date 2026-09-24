@@ -40,7 +40,8 @@ flash-card-demos/
 **命名规范**：`holo-card/<角色英文小写>/`，如 `metalgreymon`、`tailmon`。
 新卡按此结构落位。`job/` 内中间产物（`alpha-inputs/`、`raw/`、`masks/`、`*_raw.png`、
 `*_mask.png`、`*_whitecheck.png`、`original.png`、`job/source.png`、`*.blend`、`renders/`）
-只留本地、**不进 git**（见 `.gitignore`）；公开仓库靠 `assets/` + 上层展示图即可运行。
+只留本地、**不进 git**（见 `.gitignore`）。卡目录根的 **`source.png` / `source.webp`**（介绍页与首页缩略用的参考图）以及
+`character/background/ui/structure/back` 的展示 WebP **要进 git**。公开仓库靠这些展示图 + `job/assets/` 即可运行。
 展示图与 `job/assets/` 正式分层优先用 **WebP**（含 alpha）；个别线稿若 WebP 更大可保留 PNG。
 
 ## 新增一张 Holo Card 的完整流程

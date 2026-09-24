@@ -12,10 +12,10 @@ import {
 
 /** CDN 上 models 根目录（其下直接是 RMBG-1.4/） */
 const MODEL_CDN = 'https://cdn.upyun.sugarat.top/web-static/models/';
+/** CDN：仅 ort-wasm-simd-threaded.jsep.wasm；目录末尾保留 / */
+const ORT_CDN = 'https://cdn.upyun.sugarat.top/web-static/ort/';
 /** 本地目录名；与 CDN 上文件夹名一致 */
 const MODEL_ID = 'RMBG-1.4';
-
-env.backends.onnx.wasm.wasmPaths = new URL('./vendor/', import.meta.url).href;
 
 let model = null;
 let processor = null;
@@ -30,14 +30,25 @@ function report(p) {
   });
 }
 
-async function hasLocalModel() {
+async function headOk(url) {
   try {
-    const url = new URL(`./models/${MODEL_ID}/config.json`, import.meta.url);
     const res = await fetch(url, { method: 'HEAD', cache: 'no-store' });
     return res.ok;
   } catch {
     return false;
   }
+}
+
+async function resolveWasmPaths() {
+  const localWasm = new URL('./vendor/ort-wasm-simd-threaded.jsep.wasm', import.meta.url);
+  if (await headOk(localWasm)) {
+    return new URL('./vendor/', import.meta.url).href;
+  }
+  return ORT_CDN.endsWith('/') ? ORT_CDN : ORT_CDN + '/';
+}
+
+async function hasLocalModel() {
+  return headOk(new URL(`./models/${MODEL_ID}/config.json`, import.meta.url));
 }
 
 function configureRemoteCdn() {
@@ -51,6 +62,8 @@ function configureRemoteCdn() {
 
 async function ensure() {
   if (model && processor) return;
+
+  env.backends.onnx.wasm.wasmPaths = await resolveWasmPaths();
 
   const local = await hasLocalModel();
   if (local) {

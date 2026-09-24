@@ -13,6 +13,19 @@
     "width": 1066,
     "height": 1600
   },
+  "repairs": {
+    "background_inpainting": true,
+    "subject_text_cleanup": true
+  },
+  "card_rect": [
+    0.5,
+    0.5,
+    0.49812,
+    0.49875
+  ],
+  "completed_at": 1790228401567,
+  "warnings": [],
+  "quality_review": "not_automatically_verified",
   "layers": {
     "character": {
       "status": "imported",
@@ -21,7 +34,6 @@
       "sha256": "eb48e57af31d424a0040f33ac9ae927b5952afbd1a965ec60e11d7feeea51b4c",
       "format": "rgba",
       "imported_at": 1790228321796,
-      "tool_reference": "BFS+saturation threshold checkerboard removal",
       "alpha_method": "independent_selection",
       "alpha_inputs": {
         "color": "alpha-inputs/character/1790228320637168000-color.png",
@@ -37,8 +49,7 @@
       "raw": "raw/background.jpg",
       "sha256": "f6094d2ca4dd074d68b1654c58586ad559a056e355d471af64e58d5a46533946",
       "format": "rgba",
-      "imported_at": 1790228187298,
-      "tool_reference": "image_edit: rose stained glass background plate"
+      "imported_at": 1790228187298
     },
     "ui": {
       "status": "imported",
@@ -47,7 +58,6 @@
       "sha256": "e6684c3808c0d2ff997a2ad84fafa63d87b6a7d2f558307e3d19a6e2aa1366e6",
       "format": "rgba",
       "imported_at": 1790228395292,
-      "tool_reference": "thin border mask defining card rect",
       "alpha_method": "independent_selection",
       "alpha_inputs": {
         "color": "alpha-inputs/ui/1790228394441095000-color.png",
@@ -63,21 +73,15 @@
       "raw": "raw/structure.jpg",
       "sha256": "92c02c5bd5a3f29c748620857fcd531270251b74ca11cc9b97c06663962d84aa",
       "format": "mask",
-      "imported_at": 1790228366686,
-      "tool_reference": "white contour lines on black"
+      "imported_at": 1790228366686
     }
   },
-  "repairs": {
-    "background_inpainting": true,
-    "subject_text_cleanup": true
-  },
-  "card_rect": [
-    0.5,
-    0.5,
-    0.49812,
-    0.49875
-  ],
-  "completed_at": 1790228401567,
-  "warnings": [],
-  "quality_review": "not_automatically_verified"
+  "renderer": {
+    "emission": 40,
+    "rgbm_range": 64,
+    "bloom_scales": [
+      0.5,
+      0.25
+    ]
+  }
 }

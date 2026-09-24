@@ -4,12 +4,23 @@ holo-card/*/job/alpha-inputs/
 holo-card/*/job/raw/
 holo-card/*/job/masks/
 holo-card/*/job/original.png
+# job/source.png 是流水线工作副本；展示用参考图放卡目录根的 source.png / source.webp（要进 git）
 holo-card/*/job/source.png
 holo-card/*/job/*_raw.*
 holo-card/*/job/*_mask.*
 holo-card/*/job/*whitecheck*
 holo-card/**/*.blend
 holo-card/*/renders/
+
+# 卡目录根的拆层中间件（正式展示用 *.webp / source.png）
+holo-card/*/*-raw.*
+holo-card/*/*-mask.*
+holo-card/*/*-preview-*.*
+holo-card/*/center-crop.*
+holo-card/*/front-exact.*
+holo-card/*/original-hd.*
+holo-card/*/source-work.*
+holo-card/*/front.webp
 
 # RuiC 3D 卡：便携 Blender 运行时与前端依赖，不进 git
 holo-card/*/tools/

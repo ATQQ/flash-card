@@ -8,6 +8,7 @@
 
 - 游戏王 / Yu-Gi-Oh!（Konami）：黑魔导女孩、龙骑士黑魔术少女、魔术师的配合
 - 数码宝贝 / Digimon（Bandai / Toei）：机械暴龙兽、迪路兽
+- 英雄联盟 / League of Legends（Riot Games）：大元素使拉克丝；卡背为粉丝向徽记设计，非官方卡背
 
 `holo-card/magician-combo/14909.webp` 是原卡「魔术师的配合」的参考图，不是本仓库原创。其余展示图多为用户提供参考后的 AI 重绘或分层拆解，**仍可能落入原作衍生范围**。MIT 不授予复制、再分发或商用这些图像的权利。
 

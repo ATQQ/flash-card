@@ -10,15 +10,12 @@
 
     "holo-card/*/index.html",
     "holo-card/*/*.webp",
-    "holo-card/*/*.png",
-    "holo-card/*/*.jpg",
-    "holo-card/*/assets/**",
+    "holo-card/*/assets/**/*.webp",
 
     "holo-card/*/job/index.html",
     "holo-card/*/job/renderer.js",
     "holo-card/*/job/back.webp",
-    "holo-card/*/job/back.png",
-    "holo-card/*/job/assets/**",
+    "holo-card/*/job/assets/**/*.webp",
     "holo-card/*/job/THIRD_PARTY_NOTICES.md",
 
     "holo-card/*/web/index.html",
@@ -26,13 +23,19 @@
     "holo-card/*/web/app.bundle.js",
     "holo-card/*/web/icons.data.js",
     "holo-card/*/web/card-config.json",
-    "holo-card/*/web/assets/**",
+    "holo-card/*/web/assets/**/*.webp",
+    "holo-card/*/web/assets/**/*.glb",
 
     "holo-card/*/job/web/index.html",
     "holo-card/*/job/web/style.css",
     "holo-card/*/job/web/app.js",
     "holo-card/*/job/web/card-config.json",
-    "holo-card/*/job/web/assets/**",
+    "holo-card/*/job/web/assets/**/*.webp",
+    "holo-card/*/job/web/assets/**/*.glb",
+
+    "holo-card/magician-combo/assets/lineart.png",
+    "holo-card/magician-combo/web/assets/lineart.png",
+
     "holo-card/darkmagiciangirl-dragonknight/job/web/node_modules/three/build/three.module.js",
     "holo-card/darkmagiciangirl-dragonknight/job/web/node_modules/three/build/three.core.js",
     "holo-card/darkmagiciangirl-dragonknight/job/web/node_modules/three/examples/jsm/loaders/GLTFLoader.js",
@@ -53,17 +56,18 @@
     "playground/renderer.js",
     "playground/matting.js",
     "playground/matting-worker.js",
-    "playground/frames",
-    "playground/presets",
-    "playground/vendor"
+    "playground/frames/frames.js",
+    "playground/frames/**/*.webp",
+    "playground/presets/presets.js",
+    "playground/presets/**/*.webp",
+    "playground/vendor/transformers.min.js"
   ],
   "ignore": [
-    "**/*-mask.png",
-    "**/character-mask.png",
-    "**/ui-mask.png",
     "**/*.bak",
-    "**/frames/README.md",
     "**/models/**",
-    "**/renders/**"
+    "**/renders/**",
+    "**/source-work.png",
+    "**/front-exact.png",
+    "**/*.wasm"
   ]
 }
