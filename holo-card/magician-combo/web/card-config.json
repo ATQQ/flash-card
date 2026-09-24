@@ -8,9 +8,9 @@
   "description": "黑魔术师与黑魔术少女，双阵同时展开。",
   "font": "/System/Library/Fonts/STHeiti Light.ttc",
   "assets": {
-    "subject": "./assets/subject.png",
-    "background": "./assets/background.png",
-    "text": "./assets/text.png",
+    "subject": "./assets/subject.webp",
+    "background": "./assets/background.webp",
+    "text": "./assets/text.webp",
     "lineart": "./assets/lineart.png",
     "model": "./assets/card.glb"
   },

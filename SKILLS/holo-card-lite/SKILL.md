@@ -53,7 +53,7 @@ python3 <skill-dir>/scripts/native.py status --job /absolute/job
 
 Outputs include four RGBA assets, a lightweight HTML, ZIP and provenance. Assembly completion is not visual approval. Inspect actual results before claiming fidelity. No automatic publishing is performed.
 
-**Default output references external files** (`index.html` ~30KB + `assets/*.png` + `assets/back.png`): keep them together and hand over the job folder as-is; never move `index.html` alone. A plain file path opens directly in the browser (`file:///…/job/index.html`); no server or port is needed. Pass `--inline` to `assemble` only when a single self-contained HTML is required (images become base64 data URIs; the file grows to 10MB+). The renderer accepts both relative paths and data URIs (`image.src = assets[name]`), so both modes render identically.
+**Default output references external files** (`index.html` ~30KB + `assets/*.png` + `assets/back.webp`): keep them together and hand over the job folder as-is; never move `index.html` alone. A plain file path opens directly in the browser (`file:///…/job/index.html`); no server or port is needed. Pass `--inline` to `assemble` only when a single self-contained HTML is required (images become base64 data URIs; the file grows to 10MB+). The renderer accepts both relative paths and data URIs (`image.src = assets[name]`), so both modes render identically.
 
 ## Required matte-to-mask stage: affected regions only
 
@@ -106,7 +106,7 @@ Rules: keep new/edited viewer strings in Chinese; never revert to English. Code 
 
 ## Local preview
 
-Deliver the finished HTML as a plain local file path (`file:///…/job/index.html`) and let the user open it directly. Do **not** start a loopback server for a normal handoff. Because the default HTML references `assets/*.png` and `assets/back.png` with relative paths, the file must stay in its job folder (index.html + assets/ together); never hand over index.html alone, or images will not load. An http(s) URL is only needed for embedding the card inside another page (iframe) or for phone access — and in those cases serve/upload the whole job folder too. A queued file panel does not prove a browser loaded. This does not authorize public website deployment.
+Deliver the finished HTML as a plain local file path (`file:///…/job/index.html`) and let the user open it directly. Do **not** start a loopback server for a normal handoff. Because the default HTML references `assets/*.png` and `assets/back.webp` with relative paths, the file must stay in its job folder (index.html + assets/ together); never hand over index.html alone, or images will not load. An http(s) URL is only needed for embedding the card inside another page (iframe) or for phone access — and in those cases serve/upload the whole job folder too. A queued file panel does not prove a browser loaded. This does not authorize public website deployment.
 
 ## Attribution
 

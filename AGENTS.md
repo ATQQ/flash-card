@@ -23,12 +23,12 @@ flash-card-demos/
 └── holo-card/                  # 按工具/系列分组
     ├── metalgreymon/           # 一张卡一个目录，英文小写命名
     │   ├── index.html          # 介绍页（必须有，首页只链介绍页）
-    │   ├── source.png          # 原始卡面图（完整卡面，≈2:3）
-    │   ├── character.png       # 角色层（供介绍页/首页引用）
-    │   ├── background.png      # 场景层
-    │   ├── ui.png              # 卡框文字层
-    │   ├── structure.png       # 深度结构线
-    │   ├── example.png         # 生成时用的参考图（如有）
+    │   ├── source.webp          # 原始卡面图（完整卡面，≈2:3）
+    │   ├── character.webp       # 角色层（供介绍页/首页引用）
+    │   ├── background.webp      # 场景层
+    │   ├── ui.webp              # 卡框文字层
+    │   ├── structure.webp       # 深度结构线
+    │   ├── example.webp         # 生成时用的参考图（如有）
     │   └── job/                # Holo Card 工作区，原样保留勿整理
     │       ├── index.html      # 可交互 demo（图片引用外部文件，仅 ~30KB）
     │       ├── assets/         # 正式四层拆分图（transparent RGBA）
@@ -39,8 +39,9 @@ flash-card-demos/
 
 **命名规范**：`holo-card/<角色英文小写>/`，如 `metalgreymon`、`tailmon`。
 新卡按此结构落位。`job/` 内中间产物（`alpha-inputs/`、`raw/`、`masks/`、`*_raw.png`、
-`*_mask.png`、`*_whitecheck.png`、`original.png`、`source.png`、`*.blend`、`renders/`）
+`*_mask.png`、`*_whitecheck.png`、`original.png`、`job/source.png`、`*.blend`、`renders/`）
 只留本地、**不进 git**（见 `.gitignore`）；公开仓库靠 `assets/` + 上层展示图即可运行。
+展示图与 `job/assets/` 正式分层优先用 **WebP**（含 alpha）；个别线稿若 WebP 更大可保留 PNG。
 
 ## 新增一张 Holo Card 的完整流程
 
@@ -49,15 +50,15 @@ flash-card-demos/
    仅当需要单文件分享时对 `assemble` 传 `--inline`。原版 [Holo Card](https://github.com/LerSent001/holo-card)
    生成的仍是 10MB+ 内联 HTML，需按"已知经验"去内联。
    提示词句式：`/Holo Card 给我做一张XX的闪卡`；
-   如需复刻某张卡面的版式（金边、招式面板、数值栏等），附上参考图（存为 `example.png`）。
+   如需复刻某张卡面的版式（金边、招式面板、数值栏等），附上参考图（存为 `example.webp`）。
 2. **落位**：产物按上述目录结构摆放；`job/` 原样移入。
 3. **介绍页**：复制任意现有介绍页（metalgreymon 或 tailmon）改内容——
    实机 iframe 预览、RECIPE（工具 + 提示词 + 参考图）、四道工序、五张拆层图鉴。
    右上角徽标编号 +1。
 4. **首页接入**（三处，缺一不可）：
    - `heroCards` 数组加一条（`no/name/en/dir/url`），右上角随机翻转卡即纳入随机池；
-     素材用 `<dir>/background.png|character.png|ui.png` 三层
-   - 收录架加一段 `<a class="mini-card">`（图用 `source.png` 整卡原图）
+     素材用 `<dir>/background.webp|character.webp|ui.webp` 三层
+   - 收录架加一段 `<a class="mini-card">`（图用 `source.webp` 整卡原图）
    - 计数徽标与「DEMO 在列」由 JS 按 DOM 自动统计，无需手改
 5. **验证**：打开首页确认随机卡、卡册、计数三处都更新。
 
@@ -93,17 +94,18 @@ flash-card-demos/
 
 - **`job/index.html` 不要用 base64 内联图片**：5 张图全内联会把 HTML 撑到 10MB+，
   Live Server（http://127.0.0.1:5500）对这种文件响应永久挂死，iframe 只会白屏（file:// 反而正常）。
-  已把 metalgreymon / tailmon 都改为引用外部文件：四层用 `assets/*.png`，卡背用 `assets/back.png`（tailmon 原本没落盘，已从内联数据解码补出），HTML 降到 ~30KB。
+  已把 metalgreymon / tailmon 都改为引用外部文件：四层用 `assets/*.webp`，卡背用 `assets/back.webp` 或 `back.webp`（tailmon 原本没落盘，已从内联数据解码补出），HTML 降到 ~30KB。
   `renderer.js:135` 用 `image.src = assets[name]` 加载，data URI 和相对路径通吃，两种访问方式都正常。
 - **源头已解决**：`SKILLS/holo-card-lite/`（软链在 `.user_skills/holo-card-lite`）fork 自 holo-card，
   `scripts/native.py` 的 `html_document()` 默认把四层 + 卡背写成相对路径（`assets/*.png`），
   `assemble` 自动把 `back.png` 落盘到 `assets/` 并纳入 zip；`--inline` 保留原 base64 行为。
+  接入本仓库展示时再压成 WebP。
   **交付时直接给 `job/index.html` 的文件路径（file:// 打开即可）**，无需起本地服务；
   只有在嵌入介绍页 iframe / 手机预览时才需要 http(s)，且必须整目录一起提供。
   原版 holo-card 新生成的 `job/index.html` 仍默认内联，接入前需按上述方式去内联
   （替换前先做字节级一致性校验；原文件备份为 `index.html.bak`）
-- `job/assets/*.png` 是对齐好的同尺寸分层图（角色层含 alpha），
-  可直接叠放做 CSS 视差；上层目录的同名 png 是供介绍页展示的副本
+- `job/assets/*` 是对齐好的同尺寸分层图（角色层含 alpha，现多为 `.webp`），
+  可直接叠放做 CSS 视差；上层目录的同名图是供介绍页展示的副本
 - 抠图质检看 `alpha-inputs/**/*-review-black/white.png`（黑白底对照），有残留再看
 - `task.json` / `provenance.json` 记录每层的生成与修复过程，介绍页可引用但不必展示细节
-- source 图普遍 2MB+，首页只用一次；介绍页拆层图用 `object-fit: cover` 缩到卡片大小即可
+- source 图压 WebP 后通常几百 KB；介绍页拆层图用 `object-fit: cover` 缩到卡片大小即可

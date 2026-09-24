@@ -13,7 +13,9 @@ npx serve .
 
 首页和各卡的 `job/index.html` 也可以直接用 `file://` 打开。PlayGround 的自动抠图在 `file://` 下会隐藏（模型无法跨源加载）。
 
-克隆后若要用 PlayGround 抠图，需按 [`playground/models/README.md`](./playground/models/README.md) 自行下载 RMBG-1.4 权重（约 44MB，不进 git）。
+克隆后展示图已有 WebP；PNG/JPG 源文件仍保留在仓库。PlayGround 抠图：本机可放
+`playground/models/RMBG-1.4`（不入 git 的权重）；线上点「自动抠图」才从 CDN 拉。
+CDN 地址与上传说明见 [`playground/models/README.md`](./playground/models/README.md)。
 
 ## 目录
 

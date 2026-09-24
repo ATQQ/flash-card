@@ -24,3 +24,5 @@ holo-card/*/job/web/node_modules/
 .claude/
 __pycache__/
 *.pyc
+.deploy-archive.zip
+.deploy-check.zip

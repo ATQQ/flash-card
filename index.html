@@ -649,7 +649,7 @@
     <div class="grid" id="grid">
       <a class="mini-card rise d3" href="./holo-card/metalgreymon/index.html">
         <div class="mini-frame">
-          <img src="./holo-card/metalgreymon/source.png" alt="机械暴龙兽全息闪卡" loading="lazy" />
+          <img src="./holo-card/metalgreymon/source.webp" alt="机械暴龙兽全息闪卡" loading="lazy" />
           <span class="mini-sheen" aria-hidden="true"></span>
         </div>
         <div class="mini-label">
@@ -661,7 +661,7 @@
 
       <a class="mini-card rise d3" href="./holo-card/tailmon/index.html">
         <div class="mini-frame">
-          <img src="./holo-card/tailmon/source.png" alt="迪路兽全息闪卡" loading="lazy" />
+          <img src="./holo-card/tailmon/source.webp" alt="迪路兽全息闪卡" loading="lazy" />
           <span class="mini-sheen" aria-hidden="true"></span>
         </div>
         <div class="mini-label">
@@ -673,7 +673,7 @@
 
       <a class="mini-card rise d3" href="./holo-card/darkmagiciangirl/index.html">
         <div class="mini-frame">
-          <img src="./holo-card/darkmagiciangirl/source.png" alt="黑魔导女孩全息闪卡" loading="lazy" />
+          <img src="./holo-card/darkmagiciangirl/source.webp" alt="黑魔导女孩全息闪卡" loading="lazy" />
           <span class="mini-sheen" aria-hidden="true"></span>
         </div>
         <div class="mini-label">
@@ -685,7 +685,7 @@
 
       <a class="mini-card rise d3" href="./holo-card/magician-combo/index.html">
         <div class="mini-frame">
-          <img src="./holo-card/magician-combo/source.png" alt="魔术师的配合 3D 全息闪卡" loading="lazy" />
+          <img src="./holo-card/magician-combo/source.webp" alt="魔术师的配合 3D 全息闪卡" loading="lazy" />
           <span class="mini-sheen" aria-hidden="true"></span>
         </div>
         <div class="mini-label">
@@ -697,7 +697,7 @@
 
       <a class="mini-card rise d3" href="./holo-card/darkmagiciangirl-dragonknight/index.html">
         <div class="mini-frame">
-          <img src="./holo-card/darkmagiciangirl-dragonknight/source.png" alt="龙骑士黑魔术少女全息闪卡" loading="lazy" />
+          <img src="./holo-card/darkmagiciangirl-dragonknight/source.webp" alt="龙骑士黑魔术少女全息闪卡" loading="lazy" />
           <span class="mini-sheen" aria-hidden="true"></span>
         </div>
         <div class="mini-label">
@@ -760,17 +760,17 @@
     {
       no: "NO.004", name: "魔术师的配合 · 全息卡", en: "MAGICIAN COMBO",
       dir: "./holo-card/magician-combo/assets", url: "./holo-card/magician-combo/index.html",
-      files: ["background.png", "subject.png", "text.png"],
+      files: ["background.webp", "subject.webp", "text.webp"],
       rect: [0.49854, 0.49967, 0.43018, 0.46777]
     },
     {
       no: "NO.005", name: "龙骑士黑魔术少女 · 全息卡", en: "DRAGON KNIGHT DMG",
       dir: "./holo-card/darkmagiciangirl-dragonknight", url: "./holo-card/darkmagiciangirl-dragonknight/index.html",
-      files: ["background.png", "character.png", "ui.png"],
+      files: ["background.webp", "character.webp", "ui.webp"],
       rect: [0.5, 0.5, 0.5, 0.5]
     }
   ];
-  const pickedFiles = (card) => card.files ?? ["background.png", "character.png", "ui.png"];
+  const pickedFiles = (card) => card.files ?? ["background.webp", "character.webp", "ui.webp"];
 
   // UI 板不透明区（归一化 [cx,cy,hx,hy]）：把透明边距仿射映射推出卡面，overflow:hidden 裁掉
   function renderHeroCard(card) {

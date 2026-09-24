@@ -1,0 +1,38 @@
+{
+  "version": 3,
+  "prompt_digest": "1c50e724eae148e57c605e625aac30a1870f620b0ae651f59551987ab58c0a89",
+  "layer_mode": "direct_rgba",
+  "execution": "codex_builtin_image_gen",
+  "name": "大元素使拉克丝",
+  "status": "awaiting_images",
+  "created_at": 1790226377245,
+  "source": {
+    "original": "original.png",
+    "sha256": "4a9e381c607d66d44c2b4b452e7b888a8fa243e83bee354f1589558dc69780b5",
+    "normalized_sha256": "4aed13fa6cf7b2bb3226d001fdcbe558731c41042aaaeec107f6a34907b34bb4",
+    "width": 1067,
+    "height": 1600
+  },
+  "layers": {
+    "character": {
+      "status": "pending",
+      "error": null
+    },
+    "background": {
+      "status": "pending",
+      "error": null
+    },
+    "ui": {
+      "status": "pending",
+      "error": null
+    },
+    "structure": {
+      "status": "pending",
+      "error": null
+    }
+  },
+  "repairs": {
+    "background_inpainting": true,
+    "subject_text_cleanup": true
+  }
+}

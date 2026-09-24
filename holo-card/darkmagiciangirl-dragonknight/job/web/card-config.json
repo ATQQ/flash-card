@@ -23,10 +23,10 @@
     ]
   },
   "assets": {
-    "subject": "./assets/subject.png",
-    "background": "./assets/background.png",
-    "text": "./assets/text.png",
-    "lineart": "./assets/lineart.png",
+    "subject": "./assets/subject.webp",
+    "background": "./assets/background.webp",
+    "text": "./assets/text.webp",
+    "lineart": "./assets/lineart.webp",
     "model": "./assets/card.glb"
   }
 }

@@ -34,7 +34,7 @@
 |---|---|---|
 | P0 | 素材上传 | v0.4：背景/角色/卡框/**卡背**各分类行首"+"占位，点击上传；**新图追加到列表末尾，不占 + 的位置**（内存中处理，长边压缩；支持 png/jpg/webp） |
 | P0 | 预制素材库 | 内置四套背景/角色 + 两套卡背（经典=黑魔导女孩、暴龙兽）；**打开页面默认整套选中"黑魔导女孩"**；上传随时覆盖 |
-| P0 | 卡背选择 | 仅两套预制：经典 + 暴龙兽（`metalgreymon/job/back.png`）；**不做变色/自造变体**，新卡背等用户提供 |
+| P0 | 卡背选择 | 仅两套预制：经典 + 暴龙兽（`metalgreymon/job/back.webp`）；**不做变色/自造变体**，新卡背等用户提供 |
 | P0 | 自动抠图（可开关） | 浏览器端 WASM/WebGPU 推理，全本地，不上传 |
 | P0 | 不抠图直显模式 | 透明 PNG 直用；或原图直接叠放（背景与主体自带融合感时） |
 | P0 | 实时预览 | v0.4 起用 **WebGL shader 渲染**（与介绍页活卡同款：`renderer.js` 快照 + 新增 charScale/charOff/bgScale uniforms 支持微调）；结构线由角色 alpha 边缘实时生成（轮廓辉光）；拖拽/悬停视差 + 轻点翻面 |
@@ -82,20 +82,20 @@ playground/
 ├── renderer.js         # M2 接入 metalgreymon WebGL shader 作"高配渲染"开关
 ├── frames/             # 卡框/卡背管理目录：往里丢素材 + 在 frames.js 注册即可
 │   ├── frames.js       # 预制件注册表（用 <script> 引入，file:// 下可用的 manifest）
-│   ├── back-default.png
-│   ├── darkmagiciangirl/{ui.png, back.png}
-│   ├── metalgreymon/ui.png
-│   └── tailmon/ui.png
+│   ├── back-default.webp
+│   ├── darkmagiciangirl/{ui.webp, back.webp}
+│   ├── metalgreymon/ui.webp
+│   └── tailmon/ui.webp
 ├── presets/            # 预制素材库（v0.2 新增，v0.3 加卡背），注册表同 frames.js 模式
 │   ├── presets.js
-│   ├── backgrounds/    # 4 套，复用 holo-card 各卡 background.png
-│   ├── characters/     # 4 套，复用 holo-card 各卡 character.png（含 alpha）
+│   ├── backgrounds/    # 4 套，复用 holo-card 各卡 background.webp
+│   ├── characters/     # 4 套，复用 holo-card 各卡 character.webp（含 alpha）
 │   └── backs/          # 3 套卡背：经典 + HSV 变色两套（翠沼/紫霞）
 ```
 
 用户素材不落盘（P0 内存 + P2 IndexedDB 草稿）。
 
-**渲染策略（v0.4 更新）**：预览已切换为 **WebGL shader 渲染**——`playground/renderer.js` 复用 metalgreymon 渲染器快照，新增三组 uniforms（`charScale`/`charOff`/`bgScale`）承接层微调滑杆；合成前把三层统一到"角色 alpha 包围盒"尺寸（bg cover、frame fill），结构线（轮廓辉光）用角色 alpha 的 Sobel 边缘实时生成，用户素材无需预做 structure.png。
+**渲染策略（v0.4 更新）**：预览已切换为 **WebGL shader 渲染**——`playground/renderer.js` 复用 metalgreymon 渲染器快照，新增三组 uniforms（`charScale`/`charOff`/`bgScale`）承接层微调滑杆；合成前把三层统一到"角色 alpha 包围盒"尺寸（bg cover、frame fill），结构线（轮廓辉光）用角色 alpha 的 Sobel 边缘实时生成，用户素材无需预做 structure.webp。
 
 ## 8. 首页接入（已提前完成）
 

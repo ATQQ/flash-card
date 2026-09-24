@@ -1,35 +1,57 @@
-# models/ · 本地抠图模型（M2 自动抠图）
+# models/ · 抠图模型（M2）
 
-RMBG-1.4 INT8 量化版（~44MB），transformers.js 浏览器端推理，全本地不出浏览器。
-放在这里的原因：file:// 下 fetch 本地文件会被 CORS 拦死，模型必须随 http(s) 服务一起提供（PRD §6）。
+RMBG-1.4 INT8（~44MB）。**打开 PlayGround 不会下载**；点「自动抠图」才加载。
 
-## 目录结构
+## 本地文件（请保留）
 
 ```
-models/
-└── RMBG-1.4/
-    ├── config.json
-    ├── preprocessor_config.json
-    └── onnx/
-        └── model_quantized.onnx   # ~44MB
+playground/models/RMBG-1.4/
+├── config.json
+├── preprocessor_config.json
+└── onnx/
+    └── model_quantized.onnx   # ~44MB，不入 git，本机保留
 ```
 
-## 手动放置（换机器/克隆仓库后）
+开发时有本地文件就走本地；线上部署包不带权重，走 CDN。
+
+## CDN 改哪里
+
+文件：`playground/matting-worker.js` 顶部常量：
+
+```js
+const MODEL_CDN = 'https://cdn.upyun.sugarat.top/web-static/models/';
+```
+
+## 上传到又拍云什么
+
+把本机整个 `playground/models/RMBG-1.4/` 上传到：
+
+```
+https://cdn.upyun.sugarat.top/web-static/models/RMBG-1.4/
+```
+
+对应对象存储路径（前缀 `web-static` 下）：
+
+```
+models/RMBG-1.4/config.json
+models/RMBG-1.4/preprocessor_config.json
+models/RMBG-1.4/onnx/model_quantized.onnx
+```
+
+上传后应能直接打开：
+
+`https://cdn.upyun.sugarat.top/web-static/models/RMBG-1.4/config.json`
+
+## 补本地权重（换机器）
 
 ```bash
+mkdir -p playground/models/RMBG-1.4/onnx
 cd playground/models/RMBG-1.4
 curl -L -o onnx/model_quantized.onnx "https://huggingface.co/briaai/RMBG-1.4/resolve/main/onnx/model_quantized.onnx"
 curl -L -o config.json "https://huggingface.co/briaai/RMBG-1.4/resolve/main/config.json"
 curl -L -o preprocessor_config.json "https://huggingface.co/briaai/RMBG-1.4/resolve/main/preprocessor_config.json"
 ```
 
-权重不入 git（见 .gitignore）。若改走 CDN，替换 `matting-worker.js`
-里的 `env.allowRemoteModels = false` 与 `localModelPath` 逻辑即可。
+## 许可
 
-`../vendor/`（transformers.js + onnxruntime wasm，~22MB）**随仓库走、可入 git**，
-克隆后无需手动放置，只有本目录的权重需要按上面命令补。
-
-## 注意
-
-- 模型仅从本地 `./models/` 加载（worker 内 `env.allowRemoteModels = false`），不会外联。
-- RMBG-1.4 许可为 bria 非商用协议，仅供个人 demo（与仓库 THIRD_PARTY_NOTICES 习惯一致）。
+RMBG-1.4 为 Bria 非商用协议，仅供个人 / Demo。

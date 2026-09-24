@@ -1,22 +1,22 @@
-// M2 自动抠图 · Worker 推理（RMBG-1.4 INT8 量化 ~40MB，transformers.js）
-// 模型文件在 ./models/RMBG-1.4/（见 models/README.md），仅本地加载，不出浏览器。
+// M2 自动抠图 · Worker 推理（RMBG-1.4 INT8）
+// 加载策略：本 Worker / 模型 / ort wasm 均在用户点击「自动抠图」后才拉取，打开页面不占流量。
+// 模型来源：本地 ./models/RMBG-1.4 优先（开发）；没有则走 CDN（部署包不带 ~42MB 权重）。
+//
 // 协议：
 //   in  { type: 'load' }
-//   in  { type: 'run', width, height, rgba: ArrayBuffer }   // 长边 ≤1024 的像素
-//   out { type: 'progress', file, loaded, total, progress } // 模型下载/加载进度
-//   out { type: 'ready' }
-//   out { type: 'result', width, height, alpha: ArrayBuffer } // 灰度 mask（0-255），与输入同尺寸
-//   out { type: 'error', message }
+//   in  { type: 'run', width, height, rgba: ArrayBuffer }
+//   out { type: 'progress' | 'ready' | 'result' | 'error', ... }
 import {
   AutoModel, AutoProcessor, RawImage, env,
 } from './vendor/transformers.min.js';
 
-env.allowLocalModels = true;
-env.allowRemoteModels = false; // 模型只从本地 ./models/ 读，杜绝意外外联
-env.localModelPath = new URL('./models/', import.meta.url).href;
-env.backends.onnx.wasm.wasmPaths = new URL('./vendor/', import.meta.url).href; // ort wasm 也走本地
-
+/** CDN 上 models 根目录（其下直接是 RMBG-1.4/） */
+const MODEL_CDN = 'https://cdn.upyun.sugarat.top/web-static/models/';
+/** 本地目录名；与 CDN 上文件夹名一致 */
 const MODEL_ID = 'RMBG-1.4';
+
+env.backends.onnx.wasm.wasmPaths = new URL('./vendor/', import.meta.url).href;
+
 let model = null;
 let processor = null;
 
@@ -30,11 +30,39 @@ function report(p) {
   });
 }
 
+async function hasLocalModel() {
+  try {
+    const url = new URL(`./models/${MODEL_ID}/config.json`, import.meta.url);
+    const res = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+function configureRemoteCdn() {
+  env.allowLocalModels = false;
+  env.allowRemoteModels = true;
+  const base = MODEL_CDN.endsWith('/') ? MODEL_CDN : MODEL_CDN + '/';
+  env.remoteHost = base;
+  // → {MODEL_CDN}RMBG-1.4/onnx/model_quantized.onnx
+  env.remotePathTemplate = '{model}/';
+}
+
 async function ensure() {
   if (model && processor) return;
-  // RMBG-1.4 没有标准 transformers 配置，按官方配方内联 processor 参数（1024×1024，mean .5 / std 1）
+
+  const local = await hasLocalModel();
+  if (local) {
+    env.allowLocalModels = true;
+    env.allowRemoteModels = false;
+    env.localModelPath = new URL('./models/', import.meta.url).href;
+  } else {
+    configureRemoteCdn();
+  }
+
   model = await AutoModel.from_pretrained(MODEL_ID, {
-    dtype: 'q8', // → onnx/model_quantized.onnx
+    dtype: 'q8',
     config: { model_type: 'custom' },
     progress_callback: report,
   });
@@ -68,13 +96,10 @@ onmessage = async (e) => {
       const rgba = new Uint8ClampedArray(msg.rgba);
       const image = new RawImage(rgba, width, height, 4);
       const { pixel_values } = await processor(image);
-      // RMBG-1.4 的 ONNX 输入名是 "input"（非 transformers 默认的 pixel_values），动态取 session 首个输入名兜底
       const session = model.session || (model.sessions && model.sessions.model);
       const inName = (session && session.inputNames && session.inputNames[0]) || 'input';
       const output = await model({ [inName]: pixel_values });
-      // v3 的模型返回按输出名组织的对象（如 { output: Tensor }），取第一个张量即可
       const tensor = output[0] || output.output || output[Object.keys(output)[0]];
-      // RawImage.fromTensor 要 CHW 三维；模型输出是 NCHW 四维，先去掉 batch 维
       const chw = tensor.dims && tensor.dims.length === 4 ? tensor.squeeze(0) : tensor;
       const mask = await RawImage.fromTensor(chw.mul(255).to('uint8')).resize(width, height);
       const alpha = mask.data instanceof Uint8ClampedArray ? mask.data : new Uint8ClampedArray(mask.data);

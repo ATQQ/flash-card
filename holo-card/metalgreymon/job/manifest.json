@@ -3,10 +3,10 @@
   "width": 1066,
   "height": 1600,
   "assets": {
-    "character": "./assets/character.png",
-    "background": "./assets/background.png",
-    "ui": "./assets/ui.png",
-    "structure": "./assets/structure.png"
+    "character": "./assets/character.webp",
+    "background": "./assets/background.webp",
+    "ui": "./assets/ui.webp",
+    "structure": "./assets/structure.webp"
   },
-  "back": "back.png"
+  "back": "back.webp"
 }
