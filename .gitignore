@@ -1,5 +1,15 @@
-# Holo Card 产物的大体积中间包，不进 git
+# Holo Card 产物的大体积中间包，不进 git（演示只靠 job/assets/ + 上层展示图）
 holo-card/*/job/card.zip
+holo-card/*/job/alpha-inputs/
+holo-card/*/job/raw/
+holo-card/*/job/masks/
+holo-card/*/job/original.png
+holo-card/*/job/source.png
+holo-card/*/job/*_raw.*
+holo-card/*/job/*_mask.*
+holo-card/*/job/*whitecheck*
+holo-card/**/*.blend
+holo-card/*/renders/
 
 # RuiC 3D 卡：便携 Blender 运行时与前端依赖，不进 git
 holo-card/*/tools/

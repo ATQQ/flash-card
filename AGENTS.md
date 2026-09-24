@@ -32,16 +32,15 @@ flash-card-demos/
     │   └── job/                # Holo Card 工作区，原样保留勿整理
     │       ├── index.html      # 可交互 demo（图片引用外部文件，仅 ~30KB）
     │       ├── assets/         # 正式四层拆分图（transparent RGBA）
-    │       ├── raw/  masks/  alpha-inputs/
     │       ├── task.json  prompts.json  provenance.json
-    │       ├── original.png  source.png  card.zip
     │       └── THIRD_PARTY_NOTICES.md
     └── tailmon/                # 同上结构
 ```
 
 **命名规范**：`holo-card/<角色英文小写>/`，如 `metalgreymon`、`tailmon`。
-新卡按此结构落位；`job/` 内的中间产物（`*_raw.png`、`*_mask.png`、`*_whitecheck.png`）
-保留在 job 里，不要挪到上层。
+新卡按此结构落位。`job/` 内中间产物（`alpha-inputs/`、`raw/`、`masks/`、`*_raw.png`、
+`*_mask.png`、`*_whitecheck.png`、`original.png`、`source.png`、`*.blend`、`renders/`）
+只留本地、**不进 git**（见 `.gitignore`）；公开仓库靠 `assets/` + 上层展示图即可运行。
 
 ## 新增一张 Holo Card 的完整流程
 
