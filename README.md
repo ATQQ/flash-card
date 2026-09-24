@@ -29,9 +29,18 @@ CDN 地址与上传说明见 [`playground/models/README.md`](./playground/models
 | `docs/playground-prd.md` | PlayGround PRD |
 | `AGENTS.md` | 接入新卡的仓库约定 |
 
-## Holo Card Lite（本仓库 fork）
+## 使用的 Agent Skill
 
-[`SKILLS/holo-card-lite/`](./SKILLS/holo-card-lite/) 是对 [LerSent001/holo-card](https://github.com/LerSent001/holo-card) 的轻量 fork：装配时默认把四层图和卡背写成相对路径（`assets/*.png`），HTML 约 30KB，避免原版 10MB+ base64 内联；需要单文件时再加 `--inline`。本仓库里如「大元素使拉克丝」即用该 SKILL 生成。
+本仓库闪卡多由下列 Skill 生成（介绍页 RECIPE 里也有对应链接）：
+
+| Skill | 仓库 | 本仓库中的用法 |
+|---|---|---|
+| **Holo Card** | [LerSent001/holo-card](https://github.com/LerSent001/holo-card) | 机械暴龙兽、迪路兽、黑魔导女孩等分层全息卡 |
+| **Holo Card Lite** | 本仓库 [`SKILLS/holo-card-lite/`](./SKILLS/holo-card-lite/)（fork 自上一行） | 大元素使拉克丝；默认输出轻量相对路径 HTML（~30KB），避免原版 10MB+ base64 内联；需要单文件时再加 `--inline` |
+| **RuiC Card Skill** | [HRuiCcc/RuiC-card-skill](https://github.com/HRuiCcc/RuiC-card-skill) | 魔术师的配合（3D 全息） |
+| **Holo Card Studio** | [EverettFish/holo-card-studio](https://github.com/EverettFish/holo-card-studio) | 龙骑士黑魔术少女（3D 全息） |
+
+接入新卡时可用 `/Holo Card` / `/Holo Card Lite` / `/RuiC Card` 等提示词句式；约定见 [`AGENTS.md`](./AGENTS.md)。
 
 ## 免责
 
