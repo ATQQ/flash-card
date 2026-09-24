@@ -1,0 +1,4 @@
+# 模型权重不入 git（~44MB），只保留说明文档
+*
+!.gitignore
+!README.md

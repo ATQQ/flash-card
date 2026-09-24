@@ -1,5 +1,5 @@
-// PlayGround M1 · 预制素材 + 自定义上传 + WebGL 实机渲染（与介绍页活卡同款）
-// 抠图（M2）、导出落位（M3）见 docs/playground-prd.md
+// PlayGround M2 · 预制素材 + 自定义上传 + 自动抠图 + WebGL 实机渲染（与介绍页活卡同款）
+// 导出落位（M3）见 docs/playground-prd.md
 (() => {
   const FRAMES = window.PLAYGROUND_FRAMES;
   const PRESETS = window.PLAYGROUND_PRESETS;
@@ -11,9 +11,11 @@
   const fileInput = $('fileAny');
   const sliders = {
     charScale: $('sCharScale'), charX: $('sCharX'), charY: $('sCharY'),
-    bgScale: $('sBgScale'), foil: $('sFoil'),
+    bgScale: $('sBgScale'),
+    frameScale: $('sFrameScale'), frameX: $('sFrameX'), frameY: $('sFrameY'),
+    foil: $('sFoil'),
   };
-  const defaults = { charScale: 1, charX: 0, charY: 0, bgScale: 1, foil: 0.55 };
+  const defaults = { charScale: 1, charX: 0, charY: 0, bgScale: 1, frameScale: 1, frameX: 0, frameY: 0, foil: 0.55 };
   const state = {
     ...defaults,
     uploadKind: null,
@@ -105,7 +107,135 @@
       rebuildRenderer();
     }
     markOnly(rows[kind], tile);
+    if (kind === 'char') showMatting(url, tile);
   }
+
+  // ---------- M2 自动抠图：不透明角色图一键去背景 ----------
+  const MATTING = window.PLAYGROUND_MATTING;
+  const mat = {
+    box: $('mattingBox'), btn: $('btnMatting'), status: $('mattingStatus'),
+    bar: $('mattingBar'), check: $('mattingCheck'),
+    chkBlack: $('chkBlack'), chkWhite: $('chkWhite'),
+  };
+  mat.barFill = mat.bar.querySelector('i');
+  const matt = { origUrl: null, mattedUrl: null, tile: null, busy: false };
+
+  function mattingResetUI() {
+    mat.btn.textContent = '自动抠图';
+    mat.btn.disabled = false;
+    mat.status.hidden = true;
+    mat.bar.hidden = true;
+    mat.check.hidden = true;
+    mat.barFill.style.width = '0';
+  }
+  function hideMatting() { mat.box.hidden = true; matt.origUrl = matt.mattedUrl = matt.tile = null; }
+
+  // 选择角色素材后调用：透明图不显示抠图条；不透明图（jpg/无 alpha 的 png）显示
+  async function showMatting(url, tile) {
+    if (!MATTING || !MATTING.supported) { hideMatting(); return; }
+    let hasAlpha = false;
+    try {
+      const img = await loadImageCached(url);
+      const S = 256;
+      const k = Math.min(1, S / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * k));
+      const h = Math.max(1, Math.round(img.naturalHeight * k));
+      const c = mkCanvas(w, h);
+      const ctx = c.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(img, 0, 0, w, h);
+      const d = ctx.getImageData(0, 0, w, h).data;
+      for (let i = 3; i < d.length; i += 4) { if (d[i] < 250) { hasAlpha = true; break; } }
+    } catch (_) { hasAlpha = false; }
+    if (hasAlpha) { hideMatting(); return; }
+    matt.origUrl = url; matt.mattedUrl = null; matt.tile = tile;
+    mattingResetUI();
+    mat.box.hidden = false;
+  }
+
+  if (MATTING && MATTING.supported) {
+    MATTING.onProgress(({ percent }) => {
+      if (mat.bar.hidden) mat.bar.hidden = false;
+      mat.barFill.style.width = Math.min(100, Math.max(0, percent)) + '%';
+      mat.status.hidden = false;
+      mat.status.textContent = '模型加载中（首次约 40MB，之后走缓存）…';
+    });
+  }
+
+  mat.btn.addEventListener('click', async () => {
+    // 已抠图 → 还原原图
+    if (matt.mattedUrl) {
+      state.urls.char = matt.origUrl;
+      if (matt.tile) { const im = matt.tile.querySelector('img'); if (im) im.src = matt.origUrl; }
+      matt.mattedUrl = null;
+      mattingResetUI();
+      rebuildRenderer();
+      return;
+    }
+    if (matt.busy || !matt.origUrl || !MATTING || !MATTING.supported) return;
+    matt.busy = true;
+    mat.btn.disabled = true;
+    try {
+      mat.status.hidden = false;
+      mat.status.textContent = '准备模型…';
+      await MATTING.ensure();
+      mat.bar.hidden = true;
+      mat.status.textContent = '抠图中…';
+
+      // 推理输入压长边 ≤1024（PRD §6）
+      const img = await loadImageCached(matt.origUrl);
+      const S = 1024;
+      const k = Math.min(1, S / Math.max(img.naturalWidth, img.naturalHeight));
+      const iw = Math.max(1, Math.round(img.naturalWidth * k));
+      const ih = Math.max(1, Math.round(img.naturalHeight * k));
+      const inC = mkCanvas(iw, ih);
+      inC.getContext('2d').drawImage(img, 0, 0, iw, ih);
+      const { alpha } = await MATTING.run(inC);
+
+      // mask 画布（白 RGB + 灰度 alpha），放大回原尺寸做 destination-in
+      const maskC = mkCanvas(iw, ih);
+      const mctx = maskC.getContext('2d');
+      const mid = mctx.createImageData(iw, ih);
+      for (let i = 0, j = 0; j < alpha.length; i += 4, j++) {
+        mid.data[i] = 255; mid.data[i + 1] = 255; mid.data[i + 2] = 255; mid.data[i + 3] = alpha[j];
+      }
+      mctx.putImageData(mid, 0, 0);
+      const outC = mkCanvas(img.naturalWidth, img.naturalHeight);
+      const octx = outC.getContext('2d');
+      octx.drawImage(img, 0, 0);
+      octx.globalCompositeOperation = 'destination-in';
+      octx.imageSmoothingEnabled = true;
+      octx.imageSmoothingQuality = 'high';
+      octx.drawImage(maskC, 0, 0, outC.width, outC.height);
+
+      // 黑白底自查图（沿用 alpha-inputs review 习惯）
+      const chk = (bg) => {
+        const c = mkCanvas(104, 140);
+        const x = c.getContext('2d');
+        x.fillStyle = bg; x.fillRect(0, 0, 104, 140);
+        const s = Math.max(104 / outC.width, 140 / outC.height);
+        x.drawImage(outC, (104 - outC.width * s) / 2, (140 - outC.height * s) / 2, outC.width * s, outC.height * s);
+        return c.toDataURL('image/png');
+      };
+      mat.chkBlack.src = chk('#000');
+      mat.chkWhite.src = chk('#fff');
+
+      const blob = await new Promise((res, rej) => outC.toBlob((b) => b ? res(b) : rej(new Error('toBlob 失败')), 'image/png'));
+      matt.mattedUrl = URL.createObjectURL(blob);
+      state.urls.char = matt.mattedUrl;
+      if (matt.tile) { const im = matt.tile.querySelector('img'); if (im) im.src = matt.mattedUrl; }
+      mat.btn.disabled = false;
+      mat.btn.textContent = '还原原图';
+      mat.status.hidden = true;
+      mat.check.hidden = false;
+      rebuildRenderer();
+    } catch (err) {
+      mat.status.hidden = false;
+      mat.status.textContent = '抠图失败：' + (err && err.message || err);
+      mat.btn.disabled = false;
+    } finally {
+      matt.busy = false;
+    }
+  });
 
   // ---------- 预制绑定（+ 占位在行首） ----------
   addPlusTile('bg'); addPlusTile('char'); addPlusTile('frame'); addPlusTile('back');
@@ -124,6 +254,7 @@
       state.urls.char = `presets/${item.src}`;
       rebuildRenderer();
       markOnly(rows.char, el);
+      hideMatting(); // 预制角色自带 alpha，无需抠图
     });
   });
   PRESETS.backs.forEach((item) => {
@@ -276,15 +407,19 @@
   bindSlider('charX', (v) => Math.round(v));
   bindSlider('charY', (v) => Math.round(v));
   bindSlider('bgScale', (v) => v.toFixed(2));
+  bindSlider('frameScale', (v) => v.toFixed(2));
+  bindSlider('frameX', (v) => Math.round(v));
+  bindSlider('frameY', (v) => Math.round(v));
   bindSlider('foil', (v) => v.toFixed(2));
 
   $('btnReset').addEventListener('click', () => {
     Object.assign(state, defaults);
     Object.entries(sliders).forEach(([k, el]) => {
       el.value = defaults[k];
-      el.nextElementSibling.textContent = k === 'charX' || k === 'charY'
+      el.nextElementSibling.textContent = /[XY]$/.test(k)
         ? Math.round(defaults[k]) : (+defaults[k]).toFixed(2);
     });
+    dirty = true; // 重置后立即重绘
   });
 
   // ---------- 交互：拖拽 360° 旋转 / 悬停视差 / 轻点翻面（与介绍页活卡 job/index.html 一致） ----------
@@ -362,6 +497,9 @@
         charX: (state.charX / 100) * 0.6,
         charY: (state.charY / 100) * 0.6,
         bgScale: state.bgScale,
+        frameScale: state.frameScale,
+        frameX: (state.frameX / 100) * 0.6,
+        frameY: (state.frameY / 100) * 0.6,
       });
       dirty = false;
       lastX = m.x; lastY = m.y;

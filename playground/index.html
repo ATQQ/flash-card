@@ -93,6 +93,25 @@ h2 .badge-inline{
 .thumb.plus:hover{border-color:var(--cyan)}
 .thumb.plus:hover::before{color:var(--cyan); transform:scale(1.15)}
 .actions{display:flex; gap:10px}
+/* M2 自动抠图条 */
+.matting{border-top:1px dashed var(--line); padding-top:12px}
+.matting-head{display:flex; align-items:center; gap:10px}
+.matting-head .glabel{margin-bottom:0}
+.matting-btn{flex:1; padding:7px 0; font-size:12px}
+.matting-btn:disabled{opacity:.55; cursor:wait; transform:none}
+.mstatus{font-size:11px; color:var(--weak); margin-top:8px; letter-spacing:.04em}
+.mbar{margin-top:8px; height:4px; border-radius:2px; background:var(--panel2); overflow:hidden}
+.mbar i{display:block; height:100%; width:0; background:var(--foil); border-radius:2px; transition:width .2s}
+.mcheck{display:flex; align-items:center; gap:10px; margin-top:10px; flex-wrap:wrap}
+.mcheck figure{margin:0; text-align:center}
+.mcheck img{
+  width:52px; height:70px; object-fit:cover; display:block; border-radius:6px;
+  border:1px solid var(--line);
+}
+#chkBlack{background:#000}
+#chkWhite{background:#fff}
+.mcheck figcaption{font-size:9px; color:var(--weak); margin-top:3px; font-family:'JetBrains Mono',monospace}
+.mhint{font-size:10px; color:var(--weak); opacity:.8}
 /* 微调面板行：label / 滑杆 / 数值 三栏对齐 */
 .row{
   display:grid; grid-template-columns:60px 1fr 44px; gap:10px;
@@ -161,7 +180,7 @@ img{-webkit-user-drag:none}
   <header class="rise">
     <a class="back" href="../index.html">&larr; 卡册</a>
     <h1>PLAY<em>GROUND</em></h1>
-    <span class="badge">M1 · 自带素材 · 实时合成</span>
+    <span class="badge">M2 · 自动抠图 · 实时合成</span>
   </header>
   <main>
     <aside class="panel rise d2">
@@ -174,6 +193,20 @@ img{-webkit-user-drag:none}
         <div class="preset-group">
           <div class="glabel">角色</div>
           <div class="thumb-row" id="rowChar"></div>
+        </div>
+        <!-- M2 自动抠图：上传不透明角色图时出现，一键去背景；file:// 下隐藏 -->
+        <div class="matting" id="mattingBox" hidden>
+          <div class="matting-head">
+            <span class="glabel">抠图</span>
+            <button class="act matting-btn" id="btnMatting" type="button">自动抠图</button>
+          </div>
+          <div class="mstatus" id="mattingStatus" hidden></div>
+          <div class="mbar" id="mattingBar" hidden><i></i></div>
+          <div class="mcheck" id="mattingCheck" hidden>
+            <figure><img id="chkBlack" alt="黑底自查"><figcaption>黑底</figcaption></figure>
+            <figure><img id="chkWhite" alt="白底自查"><figcaption>白底</figcaption></figure>
+            <span class="mhint">残留可点「还原」切回原图</span>
+          </div>
         </div>
         <div class="preset-group">
           <div class="glabel">卡框</div>
@@ -191,6 +224,9 @@ img{-webkit-user-drag:none}
         <div class="row"><label>角色横移</label><input type="range" id="sCharX" min="-60" max="60" step="1" value="0"><output>0</output></div>
         <div class="row"><label>角色纵移</label><input type="range" id="sCharY" min="-60" max="60" step="1" value="0"><output>0</output></div>
         <div class="row"><label>背景缩放</label><input type="range" id="sBgScale" min="1" max="2" step="0.01" value="1"><output>1.00</output></div>
+        <div class="row"><label>卡框缩放</label><input type="range" id="sFrameScale" min="0.7" max="1.8" step="0.01" value="1"><output>1.00</output></div>
+        <div class="row"><label>卡框横移</label><input type="range" id="sFrameX" min="-60" max="60" step="1" value="0"><output>0</output></div>
+        <div class="row"><label>卡框纵移</label><input type="range" id="sFrameY" min="-60" max="60" step="1" value="0"><output>0</output></div>
         <div class="row"><label>全息强度</label><input type="range" id="sFoil" min="0" max="1" step="0.01" value="0.55"><output>0.55</output></div>
       </section>
       <section class="card-p actions">
@@ -212,6 +248,7 @@ img{-webkit-user-drag:none}
   <footer class="foot">所有数据仅在你的浏览器本地处理 · 不会上传到任何服务器</footer>
 </div>
 <script src="renderer.js"></script>
+<script src="matting.js"></script>
 <script src="frames/frames.js"></script>
 <script src="presets/presets.js"></script>
 <script src="playground.js"></script>

@@ -2,7 +2,7 @@
 // Lightweight, view-dependent layered card. No 3D engine or video textures.
 const vertex = `attribute vec2 position; varying vec2 uv; void main(){uv=position*.5+.5;gl_Position=vec4(position,0.,1.);}`;
 const fragment = `precision highp float;
-varying vec2 uv; uniform sampler2D art,bg,uiTex,bloomNear,bloomWide,structureTex; uniform float extracted, cardAspect; uniform vec2 view; uniform float depth, contourBrightness, power, glowPass, pixelWidth; uniform float charScale, bgScale; uniform vec2 charOff;
+varying vec2 uv; uniform sampler2D art,bg,uiTex,bloomNear,bloomWide,structureTex; uniform float extracted, cardAspect; uniform vec2 view; uniform float depth, contourBrightness, power, glowPass, pixelWidth; uniform float charScale, bgScale, frameScale; uniform vec2 charOff, frameOff;
 vec4 encodeHDR(vec3 c){float m=clamp(ceil(max(max(c.r,c.g),c.b)/64.*255.)/255.,1./255.,1.);return vec4(c/(64.*m),m);}
 vec3 decodeHDR(vec4 c){return c.rgb*c.a*64.;}
 vec3 hsv(vec3 c){vec4 K=vec4(0.,-1./3.,2./3.,-1.);vec4 p=mix(vec4(c.bg,K.wz),vec4(c.gb,K.xy),step(c.b,c.g));vec4 q=mix(vec4(p.xyw,c.r),vec4(c.r,p.yzx),step(p.x,c.r));float d=q.x-min(q.w,q.y);return vec3(abs(q.z+(q.w-q.y)/(6.*d+.00001)),d/(q.x+.00001),q.x);}
@@ -17,7 +17,7 @@ void main(){
  float edgeDistance=length(max(edge,0.))+min(max(edge.x,edge.y),0.)-.045;
  float cardMask=1.-smoothstep(-pixelWidth,pixelWidth,edgeDistance);
  float foregroundMask=depth>0.?1.:cardMask;vec2 a=(p-.5)*1.25+.5+view*.40;vec2 b=(p-.5)*.5+.5-view*.25;
- if(extracted>.5){a=(p-.5)/max(charScale,.05)+.5+charOff-view*(depth<0.?.06:.08)*depth;u=p-view*.14*max(depth,0.);b=(p-.5)/max(bgScale,.05)+.5-view*.25;}
+ if(extracted>.5){a=(p-.5)/max(charScale,.05)+.5+charOff-view*(depth<0.?.06:.08)*depth;u=(p-.5)/max(frameScale,.05)+.5+frameOff-view*.14*max(depth,0.);b=(p-.5)/max(bgScale,.05)+.5-view*.25;}
  vec4 ch=texture2D(art,a);ch.a*=step(0.,a.x)*step(a.x,1.)*step(0.,a.y)*step(a.y,1.);
  ch.a*=foregroundMask;
  vec4 background=texture2D(bg,b);background.a*=cardMask;background.a*=step(0.,b.x)*step(b.x,1.)*step(0.,b.y)*step(b.y,1.);
@@ -191,7 +191,9 @@ async function createCardRenderer(canvas, assets) {
     pass: gl.getUniformLocation(scene, 'glowPass'),
     charScale: gl.getUniformLocation(scene, 'charScale'),
     bgScale: gl.getUniformLocation(scene, 'bgScale'),
+    frameScale: gl.getUniformLocation(scene, 'frameScale'),
     charOff: gl.getUniformLocation(scene, 'charOff'),
+    frameOff: gl.getUniformLocation(scene, 'frameOff'),
   };
   use(scene);
   gl.uniform1f(
@@ -227,7 +229,9 @@ async function createCardRenderer(canvas, assets) {
       bind(wide.t, 4);
       gl.uniform1f(sceneU.charScale, adjust.charScale ?? 1);
       gl.uniform1f(sceneU.bgScale, adjust.bgScale ?? 1);
+      gl.uniform1f(sceneU.frameScale, adjust.frameScale ?? 1);
       gl.uniform2f(sceneU.charOff, adjust.charX ?? 0, adjust.charY ?? 0);
+      gl.uniform2f(sceneU.frameOff, adjust.frameX ?? 0, adjust.frameY ?? 0);
       gl.uniform2f(
         sceneU.view,
         Math.sin((y * Math.PI) / 180) * 0.65,

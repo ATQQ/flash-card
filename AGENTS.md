@@ -10,9 +10,13 @@ flash-card-demos/
 ├── index.html                  # 首页（纯静态，零依赖、零构建）
 ├── AGENTS.md                   # 本文档
 ├── docs/playground-prd.md      # PlayGround PRD（v0.2 已对齐）
-├── playground/                 # 闪卡工作台（用户自带素材，M1 已上线）
+├── playground/                 # 闪卡工作台（用户自带素材，M1 合成 + M2 自动抠图已上线）
 │   ├── index.html              # 上传背景/角色 + 预制卡框 + CSS 分层预览
-│   ├── playground.js           # 上传压缩/层微调/视差/翻面
+│   ├── playground.js           # 上传压缩/层微调/视差/翻面/抠图开关
+│   ├── matting.js              # M2 抠图主线程管理（file:// 下自动隐藏）
+│   ├── matting-worker.js       # M2 worker 推理（RMBG-1.4 INT8，models/ 本地加载）
+│   ├── models/                 # 抠图模型权重（~44MB，不入 git，见 models/README.md）
+│   ├── vendor/                 # transformers.js + ort wasm（本地化，零 CDN）
 │   ├── frames/                 # 卡框/卡背管理目录，新增见 frames/README.md
 │   └── presets/                # 预制背景/角色库，新增见 presets.js 头注释
 ├── SKILLS/holo-card-lite/      # 本项目 fork 的 Holo Card SKILL（默认外部引用图片）
